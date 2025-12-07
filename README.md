@@ -1865,6 +1865,36 @@ chore(deps): upgrade mongoose to 8.18.1
 
 ---
 
+## 🤝 Contributing & Development Workflow
+
+This project enforces strict code quality standards using **Husky** and **Commitlint**.
+
+### Commit Convention
+We follow the [Conventional Commits](https://www.conventionalcommits.org/) specification. Your commit messages must follow this format:
+
+```bash
+<type>(<scope>): <description>
+
+Allowed Types:
+
+feat: New feature
+fix: Bug fix
+docs: Documentation only
+style: Formatting, missing semi colons, etc; no code change
+refactor: Refactoring production code
+test: Adding tests, refactoring test; no production code change
+chore: Updating build tasks, package manager configs, etc
+
+# Examples:
+feat(auth): add google oauth integration
+fix(calendar): resolve event overlap issue
+chore(deps): update react to v18.3
+docs(readme): update installation guide
+```
+> **Note:** Husky will automatically block any commit that doesn't strictly follow this pattern.
+
+---
+
 ## 📄 License
 
 **Copyright © 2024-2025 Agustin Moya. All Rights Reserved.**

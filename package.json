@@ -1,12 +1,12 @@
 {
   "name": "eventask-api",
+  "private": true,
   "version": "1.0.0",
   "description": "RESTful API with real-time WebSocket notifications and event-driven architecture",
-  "private": true,
-  "license": "UNLICENSED",
   "author": "Agustin Moya",
-  "main": "dist/app.js",
+  "license": "UNLICENSED",
   "type": "module",
+  "main": "dist/app.js",
   "scripts": {
     "dev": "nodemon --watch src --ext ts --exec tsx src/app.ts",
     "build": "tsc",
@@ -17,7 +17,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
-    "test": "echo \"Info: no test specified\" && exit 1"
+    "test": "echo \"Info: no test specified\" && exit 1",
+    "prepare": "husky"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -47,6 +48,8 @@
     "socket.io": "4.7.5"
   },
   "devDependencies": {
+    "@commitlint/cli": "20.2.0",
+    "@commitlint/config-conventional": "20.2.0",
     "@eslint/js": "9.33.0",
     "@types/cookie-parser": "1.4.8",
     "@types/cors": "2.8.19",
@@ -64,6 +67,7 @@
     "eslint": "9.26.0",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-prettier": "5.4.0",
+    "husky": "9.1.7",
     "nodemon": "3.1.10",
     "prettier": "3.6.2",
     "rimraf": "6.0.1",
