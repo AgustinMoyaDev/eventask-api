@@ -1,0 +1,18 @@
+# Compilation files
+dist/
+
+# Node dependencies
+node_modules/
+
+# Local configuration files
+.env
+.env.development
+.env.local
+!.env.template
+
+# Editor directories and files
+.github/instructions/
+.vscode/
+
+# Image uploads
+uploads/
