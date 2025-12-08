@@ -20,6 +20,15 @@
     "test": "echo \"Info: no test specified\" && exit 1",
     "prepare": "husky"
   },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.ts": [
+      "bash -c 'pnpm run typecheck'"
+    ]
+  },
   "engines": {
     "node": ">=18.0.0"
   },
@@ -74,14 +83,5 @@
     "rimraf": "6.0.1",
     "tsx": "4.19.4",
     "typescript": "5.8.3"
-  },
-  "lint-staged": {
-    "*.{js,ts}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.ts": [
-      "bash -c 'pnpm run typecheck'"
-    ]
   }
 }
