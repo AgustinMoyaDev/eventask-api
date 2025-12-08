@@ -54,8 +54,8 @@ importers:
         specifier: 1.0.0
         version: 1.0.0(mongoose@8.18.1)
       mongoose-lean-virtuals:
-        specifier: 2.0.0
-        version: 2.0.0(mongoose@8.18.1)
+        specifier: 2.1.0
+        version: 2.1.0(mongoose@8.18.1)
       morgan:
         specifier: 1.10.1
         version: 1.10.1
@@ -1662,11 +1662,11 @@ packages:
     peerDependencies:
       mongoose: 7.x || 8.x
 
-  mongoose-lean-virtuals@2.0.0:
-    resolution: {integrity: sha512-f0rZnr40FzZ74mIREggCxBMK7w1WTeQ9SLH7pI+J4mpnyB0cu4UI2P1i8CdPZRF2Wquwk0ZsbetGxKM4YBGP8w==}
+  mongoose-lean-virtuals@2.1.0:
+    resolution: {integrity: sha512-1fBeyRGzwB1yHs9L/q6QBybMgJmTcgZ8v1mjCEpRTP7FNOTOMo2yzSJmOBT9gJcpOso+mOHNQiXDfYzvMLIFTw==}
     engines: {node: '>=16.20.1'}
     peerDependencies:
-      mongoose: '>=8.0.0'
+      mongoose: '>=8.0.0 || ^9.0.0-0'
 
   mongoose@8.18.1:
     resolution: {integrity: sha512-K0RfrUXXufqNRZZjvAGdyjydB91SnbWxlwFYi5t7zN2DxVWFD3c6puia0/7xfBwZm6RCpYOVdYFlRFpoDWiC+w==}
@@ -3823,7 +3823,7 @@ snapshots:
     dependencies:
       mongoose: 8.18.1
 
-  mongoose-lean-virtuals@2.0.0(mongoose@8.18.1):
+  mongoose-lean-virtuals@2.1.0(mongoose@8.18.1):
     dependencies:
       mongoose: 8.18.1
       mpath: 0.8.4
