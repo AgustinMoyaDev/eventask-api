@@ -50,7 +50,7 @@
     "lusca": "1.7.0",
     "mongoose": "8.18.1",
     "mongoose-lean-id": "1.0.0",
-    "mongoose-lean-virtuals": "2.0.0",
+    "mongoose-lean-virtuals": "2.1.0",
     "morgan": "1.10.1",
     "multer": "2.0.2",
     "node-cron": "4.2.1",
