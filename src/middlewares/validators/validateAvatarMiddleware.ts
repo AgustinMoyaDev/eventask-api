@@ -18,7 +18,13 @@ export function validateAvatarMiddleware(req: Request, res: Response, next: Next
 
   // Extract filename from path
   const filename = req.path.replace('/avatars/', '')
-  const filePath = path.join(AVATARS_DIR, filename)
+  const filePath = path.resolve(AVATARS_DIR, filename)
+
+  // Validate that filePath is within the avatars directory
+  if (!filePath.startsWith(path.resolve(AVATARS_DIR) + path.sep)) {
+    res.status(204).end()
+    return
+  }
 
   // Check if file exists
   access(filePath, constants.R_OK)
