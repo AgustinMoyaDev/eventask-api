@@ -57,8 +57,16 @@ app.get('/api/health', (_req, res) => {
 app.use(cookieParser())
 //* Session middleware for CSRF protection
 app.use(expressSession())
-//* CSRF protection middleware,applies to all routes
-app.use(lusca.csrf())
+
+//* CSRF protection - skip validation for public endpoints, but still inject csrfToken()
+app.use((req, res, next) => {
+  if (req.path === '/api/security/csrf-token' || req.path === '/api/health') {
+    // Apply lusca (Inject csrfToken()) but skip validation
+    return lusca.csrf({ angular: true })(req, res, next)
+  }
+  // Full CSRF validation for other routes
+  lusca.csrf()(req, res, next)
+})
 
 app.disable('x-powered-by')
 
