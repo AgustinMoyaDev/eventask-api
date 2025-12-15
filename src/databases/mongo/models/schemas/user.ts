@@ -40,6 +40,10 @@ const UserSchema = new Schema<UserDoc>(
       type: Boolean,
       default: false,
     },
+    hasManualPassword: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

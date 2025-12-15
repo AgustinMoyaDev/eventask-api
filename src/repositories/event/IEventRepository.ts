@@ -4,8 +4,12 @@ import { IBaseRepository } from '../../repositories/IBaseRepository.js'
 import { IEventDto } from '../../types/dtos/event.js'
 import { IEvent } from '../../types/IEvent.js'
 
-export interface IEventRepository
-  extends IBaseRepository<IEvent, string, Omit<IEvent, 'id'>, Partial<Omit<IEvent, 'id'>>> {
+export interface IEventRepository extends IBaseRepository<
+  IEvent,
+  string,
+  Omit<IEvent, 'id'>,
+  Partial<Omit<IEvent, 'id'>>
+> {
   /**
    * Marks an event as notified.
    * @param eventId ID of the event.

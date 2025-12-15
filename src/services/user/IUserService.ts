@@ -3,8 +3,12 @@ import { IBaseService } from '../IBaseService.js'
 import { IUser } from '../../types/IUser.js'
 import { IUserDto } from '../../types/dtos/user.js'
 
-export interface IUserService
-  extends IBaseService<IUser, string, Omit<IUser, 'id'>, Partial<Omit<IUser, 'id'>>> {
+export interface IUserService extends IBaseService<
+  IUser,
+  string,
+  Omit<IUser, 'id'>,
+  Partial<Omit<IUser, 'id'>>
+> {
   getProfileWithContacts(userId: string): Promise<IUserDto>
 
   /**

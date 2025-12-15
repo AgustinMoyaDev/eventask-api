@@ -10,6 +10,7 @@ export interface IUser extends IBase {
   contactsIds: string[]
   isEmailVerified?: boolean
   googleId?: string
+  hasManualPassword?: boolean
   // optional fields after populated()
   contacts?: IUserDto[]
 }

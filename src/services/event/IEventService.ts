@@ -2,8 +2,12 @@ import { IBaseService } from '../IBaseService.js'
 
 import { EventStatus, IEvent } from '../../types/IEvent.js'
 
-export interface IEventService
-  extends IBaseService<IEvent, string, Omit<IEvent, 'id'>, Partial<Omit<IEvent, 'id'>>> {
+export interface IEventService extends IBaseService<
+  IEvent,
+  string,
+  Omit<IEvent, 'id'>,
+  Partial<Omit<IEvent, 'id'>>
+> {
   updateStatus(id: string, dto: { status: EventStatus }): Promise<IEvent>
   getAllByUser(
     userId: string,

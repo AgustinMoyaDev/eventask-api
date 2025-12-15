@@ -9,9 +9,12 @@ import { IBaseRepository } from './IBaseRepository.js'
  * C: DTO for creation (default: Omit<E, 'id'>).
  * U: DTO for update (default: Partial<Omit<E, 'id'>).
  */
-export class MongooseRepository<E, ID, C = Omit<E, 'id'>, U = Partial<Omit<E, 'id'>>>
-  implements IBaseRepository<E, ID, C, U>
-{
+export class MongooseRepository<
+  E,
+  ID,
+  C = Omit<E, 'id'>,
+  U = Partial<Omit<E, 'id'>>,
+> implements IBaseRepository<E, ID, C, U> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(protected readonly model: Model<any>) {}
   /**
