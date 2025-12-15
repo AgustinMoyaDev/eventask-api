@@ -18,8 +18,7 @@ export abstract class BaseControllerImpl<
   ID = string,
   C = Omit<E, 'id'>,
   U = Partial<Omit<E, 'id'>>,
-> implements IBaseController<E, ID, C, U>
-{
+> implements IBaseController<E, ID, C, U> {
   constructor(protected service: S) {
     this.service = service
   }

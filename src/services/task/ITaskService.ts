@@ -3,8 +3,12 @@ import { ITaskCreateDto, ITaskUpdateDto } from '../../types/dtos/task.js'
 
 import { ITask } from '../../types/ITask.js'
 
-export interface ITaskService
-  extends IBaseService<ITask, string, Omit<ITask, 'id'>, Partial<Omit<ITask, 'id'>>> {
+export interface ITaskService extends IBaseService<
+  ITask,
+  string,
+  Omit<ITask, 'id'>,
+  Partial<Omit<ITask, 'id'>>
+> {
   getAllByUser(
     userId: string,
     page?: number,

@@ -2,9 +2,12 @@ import { ApiError } from '../config/middlewares/ApiError.js'
 import { IBaseRepository } from '../repositories/IBaseRepository.js'
 import { IBaseService } from './IBaseService.js'
 
-export abstract class BaseServiceImpl<E, ID = string, C = Omit<E, 'id'>, U = Partial<Omit<E, 'id'>>>
-  implements IBaseService<E, ID, C, U>
-{
+export abstract class BaseServiceImpl<
+  E,
+  ID = string,
+  C = Omit<E, 'id'>,
+  U = Partial<Omit<E, 'id'>>,
+> implements IBaseService<E, ID, C, U> {
   /** Friendly name of the entity, used in error messages */
   protected abstract resourceName: string
 

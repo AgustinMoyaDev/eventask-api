@@ -1,13 +1,12 @@
 import { IBaseService } from '../../services/IBaseService.js'
 import { IInvitation } from '../../types/IInvitation.js'
 
-export interface IInvitationService
-  extends IBaseService<
-    IInvitation,
-    string,
-    Omit<IInvitation, 'id'>,
-    Partial<Omit<IInvitation, 'id'>>
-  > {
+export interface IInvitationService extends IBaseService<
+  IInvitation,
+  string,
+  Omit<IInvitation, 'id'>,
+  Partial<Omit<IInvitation, 'id'>>
+> {
   /**
    * Invite a user by email to become a contact.
    * - Handles both existing and new users.

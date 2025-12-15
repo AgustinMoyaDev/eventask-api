@@ -5,13 +5,12 @@ import { INotification, INotificationQueryOptions } from '../../types/INotificat
  * Contract for notification repository operations.
  * Extends base repository with notification-specific methods.
  */
-export interface INotificationRepository
-  extends IBaseRepository<
-    INotification,
-    string,
-    Omit<INotification, 'id'>,
-    Partial<Omit<INotification, 'id'>>
-  > {
+export interface INotificationRepository extends IBaseRepository<
+  INotification,
+  string,
+  Omit<INotification, 'id'>,
+  Partial<Omit<INotification, 'id'>>
+> {
   /**
    * Find notifications by user ID with optional filtering.
    * @param userId - User ID to find notifications for

@@ -5,13 +5,12 @@ import { INotification, INotificationQueryOptions } from '../../types/INotificat
  * Contract for notification service operations.
  * Handles notification creation and delivery through multiple channels.
  */
-export interface INotificationService
-  extends IBaseService<
-    INotification,
-    string,
-    Omit<INotification, 'id'>,
-    Partial<Omit<INotification, 'id'>>
-  > {
+export interface INotificationService extends IBaseService<
+  INotification,
+  string,
+  Omit<INotification, 'id'>,
+  Partial<Omit<INotification, 'id'>>
+> {
   /**
    * Get user notifications with pagination and filtering.
    * @param userId - User ID to get notifications for
