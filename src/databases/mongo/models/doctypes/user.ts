@@ -9,4 +9,5 @@ export interface UserDoc extends Document {
   contactsIds: string[]
   googleId?: string
   isEmailVerified?: boolean
+  hasManualPassword?: boolean
 }

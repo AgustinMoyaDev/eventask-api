@@ -6,6 +6,7 @@ import {
   IGoogleLoginDto,
   IRequestPasswordResetDto,
   IResetPasswordDto,
+  ISetPasswordDto,
 } from '../../types/dtos/auth.js'
 
 export interface IAuthService {
@@ -27,4 +28,10 @@ export interface IAuthService {
   logout(token: string): Promise<void>
   requestPasswordReset(dto: IRequestPasswordResetDto): Promise<void>
   resetPassword(dto: IResetPasswordDto): Promise<void>
+  /**
+   * Sets or updates password for authenticated user (enables manual login for Google-only accounts).
+   * @param userId - Authenticated user ID
+   * @param dto - DTO containing new password
+   */
+  setPassword(userId: string, dto: ISetPasswordDto): Promise<void>
 }
