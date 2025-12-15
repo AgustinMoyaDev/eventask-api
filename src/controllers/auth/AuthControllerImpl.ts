@@ -11,6 +11,7 @@ import type {
   IGoogleLoginDto,
   IRequestPasswordResetDto,
   IResetPasswordDto,
+  ISetPasswordDto,
 } from '../../types/dtos/auth.js'
 
 import { refreshCookieOptions } from '../../config/utils/authCookie.js'
@@ -52,7 +53,7 @@ export class AuthController {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
-      path: '/api/auth',
+      path: '/',
     })
   }
 
@@ -62,5 +63,9 @@ export class AuthController {
 
   resetPassword = async (dto: IResetPasswordDto): Promise<void> => {
     await this.authService.resetPassword(dto)
+  }
+
+  setPassword = async (userId: string, dto: ISetPasswordDto): Promise<void> => {
+    await this.authService.setPassword(userId, dto)
   }
 }
