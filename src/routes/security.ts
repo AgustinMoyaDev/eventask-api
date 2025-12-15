@@ -11,9 +11,7 @@ export const createSecurityRouter = () => {
 
   router.get(
     '/csrf-token',
-    toHandler<AuthenticatedRequest>(async req => {
-      return { csrfToken: req.csrfToken!() }
-    }, 201)
+    toHandler<AuthenticatedRequest>(async req => ({ csrfToken: req.csrfToken!() }), 200)
   )
 
   return router
