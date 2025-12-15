@@ -17,6 +17,7 @@ import type {
   IGoogleLoginDto,
   IRequestPasswordResetDto,
   IResetPasswordDto,
+  ISetPasswordDto,
 } from '../../types/dtos/auth.js'
 
 import { generateJWT } from '../../config/middlewares/JWT/generateJWT.js'
@@ -67,6 +68,7 @@ export class AuthServiceImpl implements IAuthService {
       password: hash,
       contactsIds: [],
       profileImageURL: '',
+      hasManualPassword: true,
       createdAt: new Date(),
     })
 
@@ -76,6 +78,15 @@ export class AuthServiceImpl implements IAuthService {
   async login(dto: ILoginDto): Promise<IAuthWithRefreshTokenDto> {
     // email has been validated by express-validator middleware
     const user = await this.userRepo.findByEmail(dto.email)
+
+    // Provide clear message for Google-only accounts
+    if (user?.googleId && !user.hasManualPassword) {
+      throw new ApiError(
+        401,
+        'This account uses Google login. Please sign in with Google or set a password first.'
+      )
+    }
+
     if (!user || !(await bcrypt.compare(dto.password, user.password))) {
       throw new ApiError(401, 'Email or password incorrect.')
     }
@@ -117,6 +128,7 @@ export class AuthServiceImpl implements IAuthService {
           password: crypto.randomBytes(32).toString('hex'), // No password for Google-authenticated users (technical placeholder)
           googleId: payload.sub,
           isEmailVerified: true,
+          hasManualPassword: false,
         })
       } else if (!user.googleId) {
         // Link existing account with Google
@@ -128,6 +140,10 @@ export class AuthServiceImpl implements IAuthService {
       return this.generateAuthTokens(user)
     } catch (error) {
       console.error('Google login error:', error)
+
+      if (error instanceof Error && error.message.includes('Token used too early')) {
+        throw new ApiError(401, 'Token timing issue. Please try again.')
+      }
 
       if (error instanceof ApiError) throw error
       throw new ApiError(401, 'Google login failed.')
@@ -202,7 +218,6 @@ export class AuthServiceImpl implements IAuthService {
   async resetPassword(dto: IResetPasswordDto): Promise<void> {
     const { token, newPassword } = dto
     const tokenDoc = await this.tokenRepo.find(token)
-    console.log(tokenDoc)
 
     if (!tokenDoc || tokenDoc.type !== TOKEN_TYPE.RESET || tokenDoc.expiresAt < new Date()) {
       throw new ApiError(400, 'Invalid or expired reset token.')
@@ -218,5 +233,28 @@ export class AuthServiceImpl implements IAuthService {
 
     await this.userRepo.update(user.id, { password: hash })
     await this.tokenRepo.delete(token)
+  }
+
+  /**
+   * Sets or updates password for authenticated user.
+   * Enables manual login for Google-only accounts.
+   * @param userId - Authenticated user ID from JWT
+   * @param dto - DTO containing new password
+   */
+  async setPassword(userId: string, dto: ISetPasswordDto): Promise<void> {
+    const { newPassword } = dto
+    const user = await this.userRepo.findById(userId)
+
+    if (!user) {
+      throw new ApiError(404, 'User not found.')
+    }
+
+    const salt = await bcrypt.genSalt()
+    const hash = await bcrypt.hash(newPassword, salt)
+
+    await this.userRepo.update(userId, {
+      password: hash,
+      hasManualPassword: true,
+    })
   }
 }
