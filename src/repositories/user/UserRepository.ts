@@ -19,6 +19,17 @@ export class UserRepository
     return this.model.findOne({ email: { $eq: email } }).exec()
   }
 
+  async findByEmailWithPassword(email: string): Promise<IUser | null> {
+    return this.model
+      .findOne({ email: { $eq: email } })
+      .select('+password')
+      .exec()
+  }
+
+  async findByIdWithPassword(userId: string): Promise<IUser | null> {
+    return this.model.findById(userId).select('+password').exec()
+  }
+
   async findByIdWithContacts(userId: string): Promise<IUserDto | null> {
     const user = await this.model
       .findById(userId)
