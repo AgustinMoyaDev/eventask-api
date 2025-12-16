@@ -27,4 +27,8 @@ export class TokenRepository implements ITokenRepository {
   async delete(token: string): Promise<void> {
     await TokenModel.deleteOne({ token: { $eq: token } }).exec()
   }
+
+  async deleteByUserId(userId: string): Promise<void> {
+    await TokenModel.deleteMany({ userId: { $eq: userId } }).exec()
+  }
 }
