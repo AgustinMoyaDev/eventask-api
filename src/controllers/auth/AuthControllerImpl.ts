@@ -12,6 +12,7 @@ import type {
   IRequestPasswordResetDto,
   IResetPasswordDto,
   ISetPasswordDto,
+  IChangePasswordDto,
 } from '../../types/dtos/auth.js'
 
 import { refreshCookieOptions } from '../../config/utils/authCookie.js'
@@ -67,5 +68,9 @@ export class AuthController {
 
   setPassword = async (userId: string, dto: ISetPasswordDto): Promise<void> => {
     await this.authService.setPassword(userId, dto)
+  }
+
+  changePassword = async (userId: string, dto: IChangePasswordDto): Promise<void> => {
+    await this.authService.changePassword(userId, dto)
   }
 }

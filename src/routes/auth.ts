@@ -16,6 +16,7 @@ import { googleLoginValidations } from '../middlewares/validators/googleLoginVal
 import { passwordResetValidations } from '../middlewares/validators/requestPasswordResetValidator.js'
 import { resetPasswordValidations } from '../middlewares/validators/resetPasswordValidator.js'
 import { setPasswordValidations } from '../middlewares/validators/setPasswordValidator.js'
+import { changePasswordValidations } from '../middlewares/validators/changePasswordValidator.js'
 
 const controller = getAuthController()
 
@@ -62,6 +63,12 @@ router.post(
   validateAccessJWT,
   setPasswordValidations(),
   toHandler<AuthenticatedRequest>(req => controller.setPassword(req.uid!, req.body), 200)
+)
+router.post(
+  '/change-password',
+  validateAccessJWT,
+  changePasswordValidations(),
+  toHandler<AuthenticatedRequest>(req => controller.changePassword(req.uid!, req.body), 200)
 )
 
 export const createAuthRouter = () => router

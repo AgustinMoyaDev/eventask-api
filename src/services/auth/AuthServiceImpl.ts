@@ -18,6 +18,7 @@ import type {
   IRequestPasswordResetDto,
   IResetPasswordDto,
   ISetPasswordDto,
+  IChangePasswordDto,
 } from '../../types/dtos/auth.js'
 
 import { generateJWT } from '../../config/middlewares/JWT/generateJWT.js'
@@ -77,10 +78,10 @@ export class AuthServiceImpl implements IAuthService {
 
   async login(dto: ILoginDto): Promise<IAuthWithRefreshTokenDto> {
     // email has been validated by express-validator middleware
-    const user = await this.userRepo.findByEmail(dto.email)
+    const user = await this.userRepo.findByEmailWithPassword(dto.email)
 
     // Provide clear message for Google-only accounts
-    if (user?.googleId && !user.hasManualPassword) {
+    if (user?.googleId && user.hasManualPassword === false) {
       throw new ApiError(
         401,
         'This account uses Google login. Please sign in with Google or set a password first.'
@@ -94,11 +95,6 @@ export class AuthServiceImpl implements IAuthService {
     return this.generateAuthTokens(user)
   }
 
-  /**
-   * Authenticates a user via Google OAuth.
-   * @param dto - DTO containing Google ID token
-   * @returns Auth result or error
-   */
   async googleLogin(dto: IGoogleLoginDto): Promise<IAuthWithRefreshTokenDto> {
     const { idToken } = dto
     // Validate token format
@@ -183,10 +179,6 @@ export class AuthServiceImpl implements IAuthService {
     await this.tokenRepo.delete(token)
   }
 
-  /**
-   * Initiates password reset by generating a reset token and sending email.
-   * @param email - User's email
-   */
   async requestPasswordReset(dto: IRequestPasswordResetDto): Promise<void> {
     const { email } = dto
     const user = await this.userRepo.findByEmail(email)
@@ -210,11 +202,6 @@ export class AuthServiceImpl implements IAuthService {
     await sendPasswordResetEmail(user.email, resetToken)
   }
 
-  /**
-   * Resets user's password using a valid reset token.
-   * @param token - Reset token
-   * @param newPassword - New password
-   */
   async resetPassword(dto: IResetPasswordDto): Promise<void> {
     const { token, newPassword } = dto
     const tokenDoc = await this.tokenRepo.find(token)
@@ -235,12 +222,6 @@ export class AuthServiceImpl implements IAuthService {
     await this.tokenRepo.delete(token)
   }
 
-  /**
-   * Sets or updates password for authenticated user.
-   * Enables manual login for Google-only accounts.
-   * @param userId - Authenticated user ID from JWT
-   * @param dto - DTO containing new password
-   */
   async setPassword(userId: string, dto: ISetPasswordDto): Promise<void> {
     const { newPassword } = dto
     const user = await this.userRepo.findById(userId)
@@ -256,5 +237,25 @@ export class AuthServiceImpl implements IAuthService {
       password: hash,
       hasManualPassword: true,
     })
+  }
+
+  async changePassword(userId: string, dto: IChangePasswordDto): Promise<void> {
+    const { currentPassword, newPassword } = dto
+    const user = await this.userRepo.findByIdWithPassword(userId)
+
+    if (!user?.password) {
+      throw new ApiError(400, 'User has no password set.')
+    }
+
+    const isValid = await bcrypt.compare(currentPassword, user.password)
+    if (!isValid) {
+      throw new ApiError(401, 'Current password is incorrect.')
+    }
+
+    const salt = await bcrypt.genSalt()
+    const hash = await bcrypt.hash(newPassword, salt)
+
+    await this.userRepo.update(userId, { password: hash, hasManualPassword: true })
+    await this.tokenRepo.deleteByUserId(userId)
   }
 }

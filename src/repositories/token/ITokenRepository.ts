@@ -7,4 +7,9 @@ export interface ITokenRepository {
   save(tokenDoc: IToken): Promise<void>
   find(token: string): Promise<IToken | null>
   delete(token: string): Promise<void>
+  /**
+   * Invalidate all refresh tokens for this user (logout from other devices)
+   * @param userId
+   */
+  deleteByUserId(userId: string): Promise<void>
 }

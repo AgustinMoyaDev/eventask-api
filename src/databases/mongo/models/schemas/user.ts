@@ -23,6 +23,7 @@ const UserSchema = new Schema<UserDoc>(
     password: {
       type: String,
       required: [true, 'Password is required schema'],
+      select: false, // Exclude from queries by default for security
     },
     contactsIds: [
       {

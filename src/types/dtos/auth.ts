@@ -41,3 +41,8 @@ export interface IResetPasswordDto {
 export interface ISetPasswordDto {
   newPassword: string
 }
+
+export interface IChangePasswordDto {
+  currentPassword: string
+  newPassword: string
+}

@@ -1,5 +1,18 @@
 import { Schema, Types } from 'mongoose'
 
+/**
+ * Configures Mongoose schema transformation for API responses.
+ *
+ * Applied to all schemas to ensure consistent output:
+ * - Converts `_id` to `id` (string)
+ * - Converts ObjectIds to strings
+ * - Serializes Dates to ISO 8601
+ * - Includes virtual fields
+ * - Removes sensitive fields (password)
+ * - Removes version key (__v)
+ *
+ * @param schema - Mongoose schema to configure
+ */
 export const cleanOutput = (schema: Schema): void => {
   const options = {
     // 1. Include virtual (task, creator, etc.) in each conversion
