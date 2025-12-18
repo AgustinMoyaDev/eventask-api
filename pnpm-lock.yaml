@@ -51,8 +51,8 @@ importers:
         specifier: 8.18.1
         version: 8.18.1
       mongoose-lean-id:
-        specifier: 1.0.0
-        version: 1.0.0(mongoose@8.18.1)
+        specifier: 1.1.0
+        version: 1.1.0(mongoose@8.18.1)
       mongoose-lean-virtuals:
         specifier: 2.1.0
         version: 2.1.0(mongoose@8.18.1)
@@ -1655,10 +1655,10 @@ packages:
       socks:
         optional: true
 
-  mongoose-lean-id@1.0.0:
-    resolution: {integrity: sha512-FmDnEbEwSjuK02E/KVrXTM44/Cht3O1r5yqE1fdRbbHkTJjt29WAjNqdn3eJ7sfCFaxPak3S9tHEaTuJroof3w==}
+  mongoose-lean-id@1.1.0:
+    resolution: {integrity: sha512-c3nu/9CgoAxxqWv6z8l30exqWixXAr9sRWhwKNUM213M3NpQrWYXZNhbZYCuTy/fgNtQ5lh+IhCeNnFNlGDoiw==}
     peerDependencies:
-      mongoose: 7.x || 8.x
+      mongoose: 7.x || 8.x || 9.x
 
   mongoose-lean-virtuals@2.1.0:
     resolution: {integrity: sha512-1fBeyRGzwB1yHs9L/q6QBybMgJmTcgZ8v1mjCEpRTP7FNOTOMo2yzSJmOBT9gJcpOso+mOHNQiXDfYzvMLIFTw==}
@@ -3823,7 +3823,7 @@ snapshots:
       bson: 6.10.4
       mongodb-connection-string-url: 3.0.2
 
-  mongoose-lean-id@1.0.0(mongoose@8.18.1):
+  mongoose-lean-id@1.1.0(mongoose@8.18.1):
     dependencies:
       mongoose: 8.18.1
 
