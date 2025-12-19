@@ -36,7 +36,7 @@ export function validateAvatarMiddleware(req: Request, res: Response, next: Next
     return
   }
 
-  const filePath = path.join(AVATARS_DIR, sanitizedFilename)
+  const filePath = path.resolve(AVATARS_DIR, sanitizedFilename)
 
   // Validate that filePath is within the avatars directory (defense in depth)
   if (!filePath.startsWith(path.resolve(AVATARS_DIR) + path.sep)) {
