@@ -6,8 +6,20 @@ import { TokenModel } from '../../databases/mongo/models/schemas/token.js'
 import { ITokenDoc } from '../../databases/mongo/models/doctypes/token.js'
 
 export class TokenRepository implements ITokenRepository {
+  /**
+   * Sanitizes input to prevent NoSQL injection.
+   * Ensures input is a string primitive, not an object.
+   */
+  private sanitizeInput(input: string): string {
+    if (typeof input !== 'string') {
+      throw new Error('Invalid input: expected string')
+    }
+    return String(input)
+  }
+
   async findByToken(token: string): Promise<ITokenDoc | null> {
-    return TokenModel.findOne({ token: { $eq: token } })
+    const sanitizedToken = this.sanitizeInput(token)
+    return TokenModel.findOne({ token: { $eq: sanitizedToken } })
       .lean<ITokenDoc>()
       .exec()
   }
@@ -17,7 +29,8 @@ export class TokenRepository implements ITokenRepository {
   }
 
   async find(token: string): Promise<IToken | null> {
-    const doc = await TokenModel.findOne({ token: { $eq: token } })
+    const sanitizedToken = this.sanitizeInput(token)
+    const doc = await TokenModel.findOne({ token: { $eq: sanitizedToken } })
       .lean<IToken>()
       .exec()
     if (!doc) return null
@@ -25,10 +38,12 @@ export class TokenRepository implements ITokenRepository {
   }
 
   async delete(token: string): Promise<void> {
-    await TokenModel.deleteOne({ token: { $eq: token } }).exec()
+    const sanitizedToken = this.sanitizeInput(token)
+    await TokenModel.deleteOne({ token: { $eq: sanitizedToken } }).exec()
   }
 
   async deleteByUserId(userId: string): Promise<void> {
-    await TokenModel.deleteMany({ userId: { $eq: userId } }).exec()
+    const sanitizedUserId = this.sanitizeInput(userId)
+    await TokenModel.deleteMany({ userId: { $eq: sanitizedUserId } }).exec()
   }
 }
