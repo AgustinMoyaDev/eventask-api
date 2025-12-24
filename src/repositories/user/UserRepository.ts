@@ -13,7 +13,7 @@ import {
   IPaginationParams,
   IPaginationResult,
   normalizePaginationParams,
-} from 'helpers/pagination.js'
+} from '../../helpers/pagination.js'
 
 const ALLOWED_SORT_FIELDS = ['firstName', 'lastName', 'email'] as const
 

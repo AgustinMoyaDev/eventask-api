@@ -6,7 +6,7 @@ import { ApiError } from '../../config/middlewares/ApiError.js'
 import { BaseServiceImpl } from '../BaseServiceImpl.js'
 import { IUserService } from './IUserService.js'
 import { IUserRepository } from '../../repositories/user/IUserRepository.js'
-import { IPaginationParams, IPaginationResult } from 'helpers/pagination.js'
+import { IPaginationParams, IPaginationResult } from '../../helpers/pagination.js'
 
 export class UserServiceImpl
   extends BaseServiceImpl<IUser, string, Omit<IUser, 'id'>, Partial<Omit<IUser, 'id'>>>
