@@ -1,7 +1,8 @@
+import { IPaginationResult } from '../../helpers/pagination.js'
 import { AuthenticatedRequest } from '../../config/types/request.js'
 import { BaseControllerImpl } from '../../controllers/base/BaseControllerImpl.js'
 import { INotificationService } from '../../services/notification/INotificationService.js'
-import { INotification, INotificationQueryOptions } from '../../types/INotification.js'
+import { INotification, INotificationPaginationParams } from '../../types/INotification.js'
 
 /**
  * Controller for notification management endpoints.
@@ -11,18 +12,20 @@ export class NotificationController extends BaseControllerImpl<
   INotification,
   INotificationService
 > {
-  async getUserNotifications(req: AuthenticatedRequest): Promise<INotification[]> {
+  async getUserNotifications(req: AuthenticatedRequest): Promise<IPaginationResult<INotification>> {
     const { uid, query } = req
-    const { limit, offset, read, type } = query
+    const { page, perPage, sortBy, sortOrder, read, type } = query as INotificationPaginationParams
 
-    const options: INotificationQueryOptions = {
-      limit: limit ? parseInt(limit as string) : 20,
-      offset: offset ? parseInt(offset as string) : 0,
-      read: read ? read === 'true' : undefined,
-      type: type as string,
+    const params: INotificationPaginationParams = {
+      page: page ? parseInt(String(page)) : undefined,
+      perPage: perPage ? parseInt(String(perPage)) : undefined,
+      sortBy: sortBy as string,
+      sortOrder: sortOrder as 'asc' | 'desc',
+      read: read ?? undefined,
+      type: type as string | undefined,
     }
 
-    return this.service.getUserNotifications(uid!, options)
+    return this.service.getUserNotifications(uid!, params)
   }
 
   async getUnreadCount(req: AuthenticatedRequest) {

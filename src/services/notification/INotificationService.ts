@@ -1,5 +1,6 @@
+import { IPaginationResult } from '../../helpers/pagination.js'
 import { IBaseService } from '../../services/IBaseService.js'
-import { INotification, INotificationQueryOptions } from '../../types/INotification.js'
+import { INotification, INotificationPaginationParams } from '../../types/INotification.js'
 
 /**
  * Contract for notification service operations.
@@ -12,15 +13,15 @@ export interface INotificationService extends IBaseService<
   Partial<Omit<INotification, 'id'>>
 > {
   /**
-   * Get user notifications with pagination and filtering.
+   * Get user notifications with pagination, filtering and metadata.
    * @param userId - User ID to get notifications for
-   * @param options - Query options for filtering and pagination
-   * @returns Array of user notifications
+   * @param params - Pagination and filtering parameters
+   * @returns Paginated result with metadata
    */
   getUserNotifications(
     userId: string,
-    options?: INotificationQueryOptions
-  ): Promise<INotification[]>
+    params?: INotificationPaginationParams
+  ): Promise<IPaginationResult<INotification>>
 
   /**
    * Get count of unread notifications for user.

@@ -1,3 +1,4 @@
+import { IPaginationParams } from '../helpers/pagination.js'
 import { InvitationStatus } from './IInvitation.js'
 
 export const NOTIFICATION_TYPE = {
@@ -52,9 +53,7 @@ export interface INotificationData {
 /**
  * Query options for notification filtering.
  */
-export interface INotificationQueryOptions {
-  limit?: number
-  offset?: number
+export interface INotificationPaginationParams extends IPaginationParams {
   read?: boolean
   type?: string
 }

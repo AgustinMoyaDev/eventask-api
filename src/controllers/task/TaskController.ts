@@ -1,24 +1,25 @@
 import { BaseControllerImpl } from '../../controllers/base/BaseControllerImpl.js'
 import { ITaskService } from '../../services/task/ITaskService.js'
 
-import { IPaginationOptions } from '../../config/types/pagination.js'
+import { IPaginationParams, IPaginationResult } from '../../helpers/pagination.js'
 
+import { AuthenticatedRequest } from '../../config/types/request.js'
 import { ITask } from '../../types/ITask.js'
 import { ITaskCreateDto, ITaskUpdateDto } from '../../types/dtos/task.js'
 
 export class TaskController extends BaseControllerImpl<ITask, ITaskService> {
-  /**
-   * Get all tasks by user with pagination.
-   * @param userId - User identifier
-   * @param query - Query params (pagination)
-   * @returns Object with items and total count
-   */
-  async getAllByUser(
-    userId: string,
-    query: IPaginationOptions
-  ): Promise<{ items: ITask[]; total: number }> {
-    const { page = 1, perPage = 20 } = query
-    return this.service.getAllByUser(userId, Number(page), Number(perPage))
+  async getAllByUser(req: AuthenticatedRequest): Promise<IPaginationResult<ITask>> {
+    const { uid, query } = req
+    const { page, perPage, sortBy, sortOrder } = query as IPaginationParams
+
+    const params: IPaginationParams = {
+      page: page ? parseInt(String(page)) : undefined,
+      perPage: perPage ? parseInt(String(perPage)) : undefined,
+      sortBy: sortBy as string,
+      sortOrder: sortOrder as 'asc' | 'desc',
+    }
+
+    return this.service.getAllByUser(uid!, params)
   }
 
   async getTaskById(id: string): Promise<ITask> {

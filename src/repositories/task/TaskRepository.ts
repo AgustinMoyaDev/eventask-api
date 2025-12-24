@@ -6,7 +6,26 @@ import { ITaskRepository } from './ITaskRepository.js'
 
 import { ITask } from '../../types/ITask.js'
 import { ITaskCreateDto, ITaskUpdateDto } from '../../types/dtos/task.js'
+import { buildSortCriteria, createSortValidator } from '../../helpers/sortValidations.js'
+import {
+  calculateSkip,
+  buildPaginationResult,
+  IPaginationResult,
+  normalizePaginationParams,
+  IPaginationParams,
+} from '../../helpers/pagination.js'
 
+const ALLOWED_SORT_FIELDS = [
+  'title',
+  'status',
+  'progress',
+  'beginningDate',
+  'completionDate',
+  'createdAt',
+  'duration',
+] as const
+
+const { isAllowedField } = createSortValidator(ALLOWED_SORT_FIELDS)
 export class TaskRepository
   extends MongooseRepository<ITask, string, Omit<ITask, 'id'>, Partial<Omit<ITask, 'id'>>>
   implements ITaskRepository
@@ -15,27 +34,24 @@ export class TaskRepository
     super(TaskModel)
   }
 
-  /**
-   * Gets all of a user's tasks, sorted and populated.
-   * @param userId ID of the owning user
-   */
   async findAllByUser(
     userId: string,
-    page = 1,
-    perPage = 20
-  ): Promise<{ items: ITask[]; total: number }> {
-    const skip = Math.max(0, page - 1) * perPage
+    params: IPaginationParams = {}
+  ): Promise<IPaginationResult<ITask>> {
+    const { page, perPage, sortBy, sortOrder } = normalizePaginationParams(params)
+    const skip = calculateSkip(page, perPage)
+    const sortCriteria = buildSortCriteria(sortBy, sortOrder, isAllowedField, 'beginningDate')
 
     const filter = {
       $or: [{ createdBy: userId }, { participantsIds: userId }],
       status: { $ne: 'completed' },
     }
 
-    const [total, docs] = await Promise.all([
+    const [total, items] = await Promise.all([
       this.model.countDocuments(filter).exec(),
       this.model
         .find(filter)
-        .sort({ beginningDate: 1 })
+        .sort(sortCriteria)
         .select(
           'title status progress duration createdBy categoryId participantsIds createdAt beginningDate completionDate'
         )
@@ -46,7 +62,8 @@ export class TaskRepository
         .limit(perPage)
         .exec(),
     ])
-    return { items: docs, total }
+
+    return buildPaginationResult(items, total, page, perPage)
   }
 
   /**

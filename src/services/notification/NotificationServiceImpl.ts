@@ -1,7 +1,8 @@
+import { IPaginationResult } from '../../helpers/pagination.js'
 import { INotificationService } from './INotificationService.js'
 import { INotificationRepository } from '../../repositories/notification/INotificationRepository.js'
 
-import { INotification, INotificationQueryOptions } from '../../types/INotification.js'
+import { INotification, INotificationPaginationParams } from '../../types/INotification.js'
 import { ICreateNotificationDto } from '../../types/dtos/notification.js'
 
 import { ApiError } from '../../config/middlewares/ApiError.js'
@@ -38,9 +39,9 @@ export class NotificationServiceImpl
 
   async getUserNotifications(
     userId: string,
-    options: INotificationQueryOptions = {}
-  ): Promise<INotification[]> {
-    return this.notificationRepository.findByUserId(userId, options)
+    params: INotificationPaginationParams = {}
+  ): Promise<IPaginationResult<INotification>> {
+    return this.notificationRepository.findByUserId(userId, params)
   }
 
   async getUnreadCount(userId: string): Promise<number> {

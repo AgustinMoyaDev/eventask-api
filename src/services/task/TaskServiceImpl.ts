@@ -7,7 +7,9 @@ import { ApiError } from '../../config/middlewares/ApiError.js'
 import { ITask } from '../../types/ITask.js'
 import { IEvent } from '../../types/IEvent.js'
 import { ITaskCreateDto, ITaskUpdateDto } from '../../types/dtos/task.js'
+
 import { computeTaskMetadata } from '../../helpers/computeTaskMetadata.js'
+import { IPaginationParams, IPaginationResult } from '../../helpers/pagination.js'
 import {
   EVENT_NAMES,
   TaskAssignedEvent,
@@ -28,20 +30,11 @@ export class TaskServiceImpl
   ) {
     super(repository)
   }
-  /**
-   * Gets all tasks for a user, populated and sorted
-   */
-  async getAllByUser(
-    userId: string,
-    page?: number,
-    perPage?: number
-  ): Promise<{ items: ITask[]; total: number }> {
-    return await this.repository.findAllByUser(userId, page, perPage)
+
+  async getAllByUser(userId: string, params: IPaginationParams): Promise<IPaginationResult<ITask>> {
+    return await this.repository.findAllByUser(userId, params)
   }
 
-  /**
-   * Get a task by ID, throw 404 if it doesn't exist
-   */
   async getOnePopulated(id: string): Promise<ITask> {
     const task = await this.repository.findByIdPopulated(id)
     if (!task) {
@@ -50,10 +43,6 @@ export class TaskServiceImpl
     return task
   }
 
-  /**
-   * Create a task along with its events in a transaction,
-   * calculate and apply metadata (dates, duration, progress, status)
-   */
   async createWithEvents(dto: ITaskCreateDto, userId: string): Promise<ITask> {
     const session = await this.repository.startSession()
     session.startTransaction()
@@ -115,10 +104,6 @@ export class TaskServiceImpl
     }
   }
 
-  /**
-   * Updates a task and synchronizes events in a transaction,
-   * as well as recalculates and applies metadata.
-   */
   async updateWithEvents(id: string, dto: ITaskUpdateDto, userId: string): Promise<ITask> {
     const session = await this.repository.startSession()
     session.startTransaction()
@@ -217,9 +202,6 @@ export class TaskServiceImpl
     })
   }
 
-  /**
-   * Deletes a task and all its associated events in a transaction.
-   */
   async deleteWithEvents(id: string): Promise<void> {
     const session = await this.repository.startSession()
     session.startTransaction()

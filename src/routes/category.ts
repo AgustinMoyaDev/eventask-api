@@ -19,7 +19,7 @@ router.use(validateAccessJWT)
 
 router.get(
   '/',
-  toHandler<AuthenticatedRequest>(req => controller.getAllByUser(req.uid!, req.query))
+  toHandler<AuthenticatedRequest>(req => controller.getAllByUser(req))
 )
 router.get(
   '/:id',

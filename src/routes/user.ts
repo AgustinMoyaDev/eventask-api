@@ -27,6 +27,11 @@ router.post(
 )
 
 router.get(
+  '/me/contacts',
+  toHandler<AuthenticatedRequest>(req => controller.getContacts(req))
+)
+
+router.get(
   '/me',
   toHandler<AuthenticatedRequest>(req => controller.getProfileWithContacts(req.uid!))
 )

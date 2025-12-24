@@ -25,3 +25,21 @@ export interface IEvent extends IBase {
   creator?: IUser
   collaborators: IUser[]
 }
+
+/**
+ * Query parameters for calendar view (strings from URL)
+ */
+export interface IEventCalendarQueryParams {
+  year?: string
+  month?: string
+}
+
+/**
+ * Calendar view result with events grouped by month
+ */
+export interface IEventCalendarResult {
+  events: IEvent[]
+  year: number
+  month: number
+  total: number
+}
