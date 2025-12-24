@@ -2,6 +2,7 @@ import { IBaseService } from '../IBaseService.js'
 
 import { IUser } from '../../types/IUser.js'
 import { IUserDto } from '../../types/dtos/user.js'
+import { IPaginationParams, IPaginationResult } from '../../helpers/pagination.js'
 
 export interface IUserService extends IBaseService<
   IUser,
@@ -9,6 +10,7 @@ export interface IUserService extends IBaseService<
   Omit<IUser, 'id'>,
   Partial<Omit<IUser, 'id'>>
 > {
+  getContacts(userId: string, params: IPaginationParams): Promise<IPaginationResult<IUserDto>>
   getProfileWithContacts(userId: string): Promise<IUserDto>
 
   /**

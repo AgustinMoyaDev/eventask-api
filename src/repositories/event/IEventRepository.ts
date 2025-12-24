@@ -2,7 +2,8 @@ import { ClientSession } from 'mongoose'
 
 import { IBaseRepository } from '../../repositories/IBaseRepository.js'
 import { IEventDto } from '../../types/dtos/event.js'
-import { IEvent } from '../../types/IEvent.js'
+import { IEvent, IEventCalendarResult } from '../../types/IEvent.js'
+import { IPaginationParams, IPaginationResult } from '../../helpers/pagination.js'
 
 export interface IEventRepository extends IBaseRepository<
   IEvent,
@@ -31,11 +32,16 @@ export interface IEventRepository extends IBaseRepository<
    * Gets the events created by a user.
    * @param userId ID of the creator user.
    */
-  findByUser(
-    userId: string,
-    page?: number,
-    perPage?: number
-  ): Promise<{ items: IEvent[]; total: number }>
+  findAllByUser(userId: string, params: IPaginationParams): Promise<IPaginationResult<IEvent>>
+
+  /**
+   * Find events by user and month for calendar view.
+   * Returns all events within the specified month without pagination.
+   * @param userId - User ID
+   * @param year - Year (e.g., 2025)
+   * @param month - Month (1-12)
+   */
+  findAllByUserAndMonth(userId: string, year: number, month: number): Promise<IEventCalendarResult>
 
   /**
    * Gets a task's events in plain IEvent format.

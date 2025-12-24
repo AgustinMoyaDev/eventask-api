@@ -1,5 +1,6 @@
+import { IPaginationResult } from '../../helpers/pagination.js'
 import { IBaseRepository } from '../../repositories/IBaseRepository.js'
-import { INotification, INotificationQueryOptions } from '../../types/INotification.js'
+import { INotification, INotificationPaginationParams } from '../../types/INotification.js'
 
 /**
  * Contract for notification repository operations.
@@ -12,12 +13,15 @@ export interface INotificationRepository extends IBaseRepository<
   Partial<Omit<INotification, 'id'>>
 > {
   /**
-   * Find notifications by user ID with optional filtering.
+   * Find notifications by user ID with pagination, filtering and metadata.
    * @param userId - User ID to find notifications for
-   * @param options - Optional filtering parameters
-   * @returns Array of user notifications ordered by creation date
+   * @param params - Pagination and filtering parameters
+   * @returns Paginated result with metadata
    */
-  findByUserId(userId: string, options?: INotificationQueryOptions): Promise<INotification[]>
+  findByUserId(
+    userId: string,
+    params?: INotificationPaginationParams
+  ): Promise<IPaginationResult<INotification>>
 
   /**
    * Count unread notifications for a specific user.

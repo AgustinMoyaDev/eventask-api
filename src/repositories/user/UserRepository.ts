@@ -6,6 +6,18 @@ import { UserModel } from '../../databases/mongo/models/schemas/user.js'
 
 import { IUser } from '../../types/IUser.js'
 import { IUserDto } from '../../types/dtos/user.js'
+import { buildSortCriteria, createSortValidator } from '../../helpers/sortValidations.js'
+import {
+  buildPaginationResult,
+  calculateSkip,
+  IPaginationParams,
+  IPaginationResult,
+  normalizePaginationParams,
+} from 'helpers/pagination.js'
+
+const ALLOWED_SORT_FIELDS = ['firstName', 'lastName', 'email'] as const
+
+const { isAllowedField } = createSortValidator(ALLOWED_SORT_FIELDS)
 
 export class UserRepository
   extends MongooseRepository<IUser, string, Omit<IUser, 'id'>, Partial<Omit<IUser, 'id'>>>
@@ -13,6 +25,32 @@ export class UserRepository
 {
   constructor() {
     super(UserModel)
+  }
+
+  async findContacts(
+    userId: string,
+    params: IPaginationParams
+  ): Promise<IPaginationResult<IUserDto>> {
+    const { page, perPage, sortBy, sortOrder } = normalizePaginationParams(params)
+    const skip = calculateSkip(page, perPage)
+    const sortCriteria = buildSortCriteria(sortBy, sortOrder, isAllowedField, 'firstName')
+
+    const filter = {
+      _id: { $ne: userId },
+    }
+    const [total, items] = await Promise.all([
+      this.model.countDocuments(filter).exec(),
+      this.model
+        .find(filter)
+        .sort(sortCriteria)
+        .select('firstName lastName email profileImageURL')
+        .lean<IUserDto[]>({ virtuals: true })
+        .skip(skip)
+        .limit(perPage)
+        .exec(),
+    ])
+
+    return buildPaginationResult(items, total, page, perPage)
   }
 
   async findByEmail(email: string): Promise<IUser | null> {

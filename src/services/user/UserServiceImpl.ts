@@ -6,6 +6,7 @@ import { ApiError } from '../../config/middlewares/ApiError.js'
 import { BaseServiceImpl } from '../BaseServiceImpl.js'
 import { IUserService } from './IUserService.js'
 import { IUserRepository } from '../../repositories/user/IUserRepository.js'
+import { IPaginationParams, IPaginationResult } from 'helpers/pagination.js'
 
 export class UserServiceImpl
   extends BaseServiceImpl<IUser, string, Omit<IUser, 'id'>, Partial<Omit<IUser, 'id'>>>
@@ -15,6 +16,13 @@ export class UserServiceImpl
 
   constructor(private readonly userRepository: IUserRepository) {
     super(userRepository)
+  }
+
+  async getContacts(
+    userId: string,
+    params: IPaginationParams
+  ): Promise<IPaginationResult<IUserDto>> {
+    return this.userRepository.findContacts(userId, params)
   }
 
   async getProfileWithContacts(userId: string): Promise<IUserDto> {

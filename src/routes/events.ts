@@ -21,7 +21,11 @@ router.use(validateAccessJWT)
 
 router.get(
   '/',
-  toHandler<AuthenticatedRequest>(req => controller.getAllByUser(req.uid!, req.query))
+  toHandler<AuthenticatedRequest>(req => controller.getAllByUser(req))
+)
+router.get(
+  '/calendar',
+  toHandler<AuthenticatedRequest>(req => controller.getAllByMonth(req))
 )
 router.get(
   '/all',

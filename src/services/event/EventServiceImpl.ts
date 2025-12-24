@@ -6,7 +6,7 @@ import { BaseServiceImpl } from '../BaseServiceImpl.js'
 import { IEventService } from './IEventService.js'
 
 import { TASK_STATUS } from '../../types/ITask.js'
-import { EventStatus, IEvent } from '../../types/IEvent.js'
+import { EventStatus, IEvent, IEventCalendarResult } from '../../types/IEvent.js'
 
 import { IApplicationEventEmitter } from '../../sys-events/IApplicationEventEmitter.js'
 import {
@@ -16,6 +16,7 @@ import {
 } from '../../sys-events/types/sys-events.js'
 
 import { computeTaskMetadata } from '../../helpers/computeTaskMetadata.js'
+import { IPaginationParams, IPaginationResult } from '../../helpers/pagination.js'
 
 import { ApiError } from '../../config/middlewares/ApiError.js'
 
@@ -36,12 +37,24 @@ export class EventServiceImpl
 
   async getAllByUser(
     userId: string,
-    page?: number,
-    perPage?: number
-  ): Promise<{ items: IEvent[]; total: number }> {
-    const { items, total } = await this.eventRepository.findByUser(userId, page, perPage)
-    if (items.length === 0) throw new ApiError(404, 'No events found for this user.')
-    return { items, total }
+    params: IPaginationParams
+  ): Promise<IPaginationResult<IEvent>> {
+    return await this.eventRepository.findAllByUser(userId, params)
+  }
+
+  async getAllByUserAndMonth(
+    userId: string,
+    year: number,
+    month: number
+  ): Promise<IEventCalendarResult> {
+    if (month < 1 || month > 12) {
+      throw new ApiError(400, 'Month must be between 1 and 12')
+    }
+    if (year < 1900 || year > 2100) {
+      throw new ApiError(400, 'Year must be between 1900 and 2100')
+    }
+
+    return await this.eventRepository.findAllByUserAndMonth(userId, year, month)
   }
 
   async updateStatus(id: string, dto: { status: EventStatus }): Promise<IEvent> {

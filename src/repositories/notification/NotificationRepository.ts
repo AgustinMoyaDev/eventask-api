@@ -1,10 +1,21 @@
+import {
+  buildPaginationResult,
+  calculateSkip,
+  normalizePaginationParams,
+  IPaginationResult,
+} from '../../helpers/pagination.js'
+import { buildSortCriteria, createSortValidator } from '../../helpers/sortValidations.js'
+
 import { MongooseRepository } from '../../repositories/MongooseRepository.js'
 
 import { INotificationRepository } from './INotificationRepository.js'
 
 import { NotificationModel } from '../../databases/mongo/models/schemas/notification.js'
 
-import { INotification, INotificationQueryOptions } from '../../types/INotification.js'
+import { INotification, INotificationPaginationParams } from '../../types/INotification.js'
+
+const ALLOWED_SORT_FIELDS = ['createdAt', 'read', 'type'] as const
+const { isAllowedField } = createSortValidator(ALLOWED_SORT_FIELDS)
 
 /**
  * MongoDB implementation of notification repository.
@@ -24,30 +35,44 @@ export class NotificationRepository
   }
 
   /**
-   * Find notifications by user ID with optional filtering.
+   * Find notifications by user ID with pagination, filtering and metadata.
    * @param userId - User ID to find notifications for
-   * @param options - Optional filtering parameters
-   * @returns Array of user notifications ordered by creation date
+   * @param params - Pagination and filtering parameters
+   * @returns Paginated result with metadata
    */
   async findByUserId(
     userId: string,
-    options: INotificationQueryOptions = {}
-  ): Promise<INotification[]> {
-    const { limit = 20, offset = 0, read, type } = options
+    params: INotificationPaginationParams = {}
+  ): Promise<IPaginationResult<INotification>> {
+    // Normalize parameters
+    const { page, perPage, sortBy, sortOrder, read, type } = {
+      ...normalizePaginationParams(params),
+      read: params.read,
+      type: params.type,
+    }
 
+    // Build query components
+    const skip = calculateSkip(page, perPage)
+    const sortCriteria = buildSortCriteria(sortBy, sortOrder, isAllowedField, 'createdAt')
+
+    // Build filter
     const query: Record<string, unknown> = { userId }
-
-    if (read !== undefined) query.read = read
+    if (read) query.read = read
     if (type) query.type = type
 
-    const docs = await this.model
-      .find(query)
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .skip(offset)
-      .exec()
+    // Execute query
+    const [total, items] = await Promise.all([
+      this.model.countDocuments(query).exec(),
+      this.model
+        .find(query)
+        .sort(sortCriteria)
+        .skip(skip)
+        .limit(perPage)
+        .lean<INotification[]>({ virtuals: true })
+        .exec(),
+    ])
 
-    return docs.map(doc => doc.toJSON())
+    return buildPaginationResult(items, total, page, perPage)
   }
 
   /**
