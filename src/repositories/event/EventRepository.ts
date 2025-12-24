@@ -14,7 +14,7 @@ import {
   IPaginationResult,
   normalizePaginationParams,
 } from '../../helpers/pagination.js'
-import { buildSortCriteria, createSortValidator } from 'helpers/sortValidations.js'
+import { buildSortCriteria, createSortValidator } from '../../helpers/sortValidations.js'
 
 const ALLOWED_SORT_FIELDS = ['title', 'start', 'end'] as const
 
