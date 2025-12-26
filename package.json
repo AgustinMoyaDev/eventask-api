@@ -1,7 +1,7 @@
 {
   "name": "eventask-api",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "RESTful API with real-time WebSocket notifications and event-driven architecture",
   "author": "Agustin Moya",
   "license": "SEE LICENSE IN LICENSE",
