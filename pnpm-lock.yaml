@@ -12,8 +12,8 @@ importers:
         specifier: 3.0.3
         version: 3.0.3
       connect-mongo:
-        specifier: 5.1.0
-        version: 5.1.0(express-session@1.18.2)(mongodb@6.18.0)
+        specifier: 6.0.0
+        version: 6.0.0(express-session@1.18.2)(mongodb@6.18.0)
       cookie-parser:
         specifier: 1.4.7
         version: 1.4.7
@@ -1132,12 +1132,12 @@ packages:
     resolution: {integrity: sha512-MWufYdFw53ccGjCA+Ol7XJYpAlW6/prSMzuPOTRnJGcGzuhLn4Scrz7qf6o8bROZ514ltazcIFJZevcfbo0x7A==}
     engines: {'0': node >= 6.0}
 
-  connect-mongo@5.1.0:
-    resolution: {integrity: sha512-xT0vxQLqyqoUTxPLzlP9a/u+vir0zNkhiy9uAdHjSCcUUf7TS5b55Icw8lVyYFxfemP3Mf9gdwUOgeF3cxCAhw==}
-    engines: {node: '>=12.9.0'}
+  connect-mongo@6.0.0:
+    resolution: {integrity: sha512-mHxfnTiWk7ZtxmHdcrFBKlr7fCtgGoFpx/oe9jFW0yb2NinagsxEeuol78nUWMpnWyYK0nnuXMlU9wrgUjTE6g==}
+    engines: {node: '>=20.8.0'}
     peerDependencies:
       express-session: ^1.17.1
-      mongodb: '>= 5.1.0 < 7'
+      mongodb: '>=5.0.0'
 
   content-disposition@1.0.1:
     resolution: {integrity: sha512-oIXISMynqSqm241k6kcQ5UwttDILMK4BiurCfGEREw6+X9jkkpEe5T9FZaApyLGGOnFuyMWZpdolTXMtvEJ08Q==}
@@ -1769,8 +1769,8 @@ packages:
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
 
-  kruptein@3.1.4:
-    resolution: {integrity: sha512-Hqxvup8QFK2KXtvbEBQTe9yGZJbZtjiqhrHJkLweXHmeC4WuQompi0h5YfSizlG+EM61AXw6HeufTXbpc1lltg==}
+  kruptein@3.0.8:
+    resolution: {integrity: sha512-0CyalFA0Cjp3jnziMp0u1uLZW2/ouhQ0mEMfYlroBXNe86na1RwAuwBcdRAegeWZNMfQy/G5fN47g/Axjtqrfw==}
     engines: {node: '>8'}
 
   levn@0.4.1:
@@ -3974,11 +3974,11 @@ snapshots:
       readable-stream: 3.6.2
       typedarray: 0.0.6
 
-  connect-mongo@5.1.0(express-session@1.18.2)(mongodb@6.18.0):
+  connect-mongo@6.0.0(express-session@1.18.2)(mongodb@6.18.0):
     dependencies:
-      debug: 4.4.1
+      debug: 4.4.3(supports-color@5.5.0)
       express-session: 1.18.2
-      kruptein: 3.1.4
+      kruptein: 3.0.8
       mongodb: 6.18.0
     transitivePeerDependencies:
       - supports-color
@@ -4668,7 +4668,7 @@ snapshots:
     dependencies:
       json-buffer: 3.0.1
 
-  kruptein@3.1.4:
+  kruptein@3.0.8:
     dependencies:
       asn1.js: 5.4.1
 

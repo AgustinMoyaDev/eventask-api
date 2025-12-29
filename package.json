@@ -36,7 +36,7 @@
   "keywords": [],
   "dependencies": {
     "bcryptjs": "3.0.3",
-    "connect-mongo": "5.1.0",
+    "connect-mongo": "6.0.0",
     "cookie-parser": "1.4.7",
     "cors": "2.8.5",
     "dayjs": "1.11.19",
