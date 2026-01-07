@@ -23,7 +23,7 @@ const controller = getAuthController()
 const router = Router()
 
 router.post(
-  '/request-password-reset',
+  '/forgot-password',
   passwordResetValidations(),
   toHandler(req => controller.requestPasswordReset(req.body), 200)
 )
