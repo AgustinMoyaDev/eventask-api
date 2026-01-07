@@ -1,6 +1,6 @@
 import { ICategoryService } from '../../services/category/ICategoryService.js'
 import { BaseControllerImpl } from '../base/BaseControllerImpl.js'
-import { ICategory } from '../../types/ICategory.js'
+import { ICategory, ICategoryWithTaskCount } from '../../types/ICategory.js'
 
 import { IPaginationParams, IPaginationResult } from '../../helpers/pagination.js'
 
@@ -23,5 +23,10 @@ export class CategoryController extends BaseControllerImpl<ICategory, ICategoryS
 
   async createCategory(userId: string, data: ICategoryCreateDto): Promise<ICategory> {
     return this.service.create({ ...data, createdBy: userId, createdAt: new Date() })
+  }
+
+  async getAllByUserWithTaskCount(req: AuthenticatedRequest): Promise<ICategoryWithTaskCount[]> {
+    const { uid } = req
+    return this.service.getAllByUserWithTaskCount(uid!)
   }
 }

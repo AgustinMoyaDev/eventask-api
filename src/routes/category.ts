@@ -22,6 +22,10 @@ router.get(
   toHandler<AuthenticatedRequest>(req => controller.getAllByUser(req))
 )
 router.get(
+  '/task-count',
+  toHandler<AuthenticatedRequest>(req => controller.getAllByUserWithTaskCount(req))
+)
+router.get(
   '/:id',
   toHandler(req => controller.getById(req.params.id), 200)
 )

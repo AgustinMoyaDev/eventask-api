@@ -1,6 +1,6 @@
 import { IPaginationParams, IPaginationResult } from '../../helpers/pagination.js'
 import { IBaseService } from '../../services/IBaseService.js'
-import { ICategory } from '../../types/ICategory.js'
+import { ICategory, ICategoryWithTaskCount } from '../../types/ICategory.js'
 
 export interface ICategoryService extends IBaseService<
   ICategory,
@@ -9,4 +9,5 @@ export interface ICategoryService extends IBaseService<
   Partial<Omit<ICategory, 'id'>>
 > {
   getAllByUser(userId: string, params: IPaginationParams): Promise<IPaginationResult<ICategory>>
+  getAllByUserWithTaskCount(userId: string): Promise<ICategoryWithTaskCount[]>
 }

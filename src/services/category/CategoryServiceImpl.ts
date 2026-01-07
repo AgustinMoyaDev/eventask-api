@@ -2,7 +2,7 @@ import { BaseServiceImpl } from '../../services/BaseServiceImpl.js'
 
 import { ICategoryService } from './ICategoryService.js'
 import { ICategoryRepository } from '../../repositories/category/ICategoryRepository.js'
-import { ICategory } from '../../types/ICategory.js'
+import { ICategory, ICategoryWithTaskCount } from '../../types/ICategory.js'
 import { IPaginationParams, IPaginationResult } from '../../helpers/pagination.js'
 
 export class CategoryServiceImpl
@@ -20,5 +20,9 @@ export class CategoryServiceImpl
     params: IPaginationParams
   ): Promise<IPaginationResult<ICategory>> {
     return await this.repository.findAllByUser(userId, params)
+  }
+
+  async getAllByUserWithTaskCount(userId: string): Promise<ICategoryWithTaskCount[]> {
+    return await this.repository.findAllByUserWithTaskCount(userId)
   }
 }
