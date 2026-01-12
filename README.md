@@ -20,108 +20,94 @@
 
 ## 📖 Overview
 
-**EvenTask API** is a modern backend application built with **Node.js**, **TypeScript**, **Express**, and **MongoDB** following **Clean Architecture** principles. It provides a robust RESTful API for collaborative task management with real-time notifications via WebSocket and an event-driven architecture for loose coupling between services.
+**EvenTask API** is a RESTful backend for collaborative task management built with **Node.js**, **TypeScript**, **Express**, and **MongoDB**. It follows **Clean Architecture** principles with event-driven design for loose coupling between services.
 
 ### 🎯 Core Concept: Event-Based Tasks
 
-The API manages **Tasks** composed of multiple **Events** (time-boxed work sessions), enforcing an 8-hour maximum workday constraint. Each task automatically calculates metadata (duration, progress, status) based on its events.
+Tasks are composed of **Events** (time-boxed work sessions) with an 8-hour workday constraint. The API automatically calculates task metadata (duration, progress, status) based on event completion.
 
 ### 🏗️ Architecture Highlights
 
 - **Layered Architecture**: Controllers → Services → Repositories → Models
-- **Dependency Injection Container**: Centralized singleton management for testability
-- **Event-Driven Design**: Domain events decouple services via Observer pattern
+- **Dependency Injection**: Centralized singleton container for testability
+- **Event-Driven Design**: Observer pattern decouples services via domain events
 - **Real-Time Communication**: Socket.io with JWT authentication
-- **Automated Scheduling**: Node-cron for event reminder notifications
+- **Automated Scheduling**: Cron-based event reminders
 
 ---
 
 ## ✨ Key Features
 
 ### 🔐 Authentication & Security
-- **JWT-based authentication**: Access tokens (15 min) + Refresh tokens (7 days)
-- **Refresh token persistence**: Stored in MongoDB with automatic rotation
-- **Google OAuth 2.0**: Social login integration with google-auth-library
-- **Password reset flow**: One-time tokens sent via email (nodemailer)
-- **CSRF protection**: Double-submit cookie pattern with Lusca
+
+- **JWT authentication**: Access tokens (15 min) + Refresh tokens (7 days) stored in MongoDB
+- **Google OAuth 2.0**: Social login integration
+- **Password reset flow**: One-time tokens sent via email
+- **CSRF protection**: Double-submit cookie pattern
 - **Rate limiting**: 500 requests per 15 minutes per IP
-- **bcrypt hashing**: Secure password storage with salt rounds
-- **HTTP-only cookies**: Secure, SameSite cookies for refresh tokens
+- **bcrypt hashing**: Secure password storage
+- **HTTP-only cookies**: Secure refresh token storage
 
 ### 📋 Task & Event Management
-- **Atomic transactions**: MongoDB sessions ensure task + events created/updated together
-- **Automatic metadata calculation**: `beginningDate`, `completionDate`, `duration`, `progress`, `status`
-- **Event synchronization**: Create new, update existing, delete obsolete events in single operation
-- **8-hour workday constraint**: Tasks limited to standard workday duration
-- **Status tracking**: Pending → In Progress → Completed based on event completion
+
+- **Atomic transactions**: MongoDB sessions ensure data consistency
+- **Automatic metadata**: Calculates `beginningDate`, `completionDate`, `duration`, `progress`, `status`
+- **Event synchronization**: Single operation to create, update, and delete events
+- **8-hour workday constraint**: Realistic task planning
+- **Status tracking**: Pending → In Progress → Completed
 - **Category organization**: Group tasks by custom categories
 
 ### 👥 Collaboration
-- **Invitation system**: Send/accept/reject contact invitations
-- **Participant assignment**: Assign collaborators to tasks and specific events
-- **Contact management**: User network for collaboration
-- **Real-time updates**: Instant notifications for all collaborators
+
+- **Invitation system**: Send, accept, reject contact invitations
+- **Participant assignment**: Assign collaborators to tasks and events
+- **Contact management**: Build user network for collaboration
+- **Real-time updates**: Instant notifications via WebSocket
 
 ### 🔔 Real-Time Notifications
-- **WebSocket with Socket.io**: Bidirectional communication with JWT authentication
-- **User-specific rooms**: `user:${userId}` for targeted message delivery
-- **Notification persistence**: All notifications stored in MongoDB
-- **Multi-type notifications**: Task, Event, Invitation, System
-- **Read/unread tracking**: Mark notifications as read
+
+- **Socket.io with JWT**: WebSocket authentication and bidirectional communication
+- **User-specific rooms**: Targeted message delivery to `user:${userId}`
+- **Multi-type notifications**: Task, Event, Invitation, System alerts
+- **Persistent storage**: All notifications stored in MongoDB
 - **Event-driven creation**: Automatically generated from domain events
 
-### 📅 Event Notification Scheduler
-- **Automated reminders**: Cron job runs every minute to check upcoming events
-- **10-minute advance warning**: Notifies participants when events start in ≤10 minutes
-- **Multi-recipient delivery**: Alerts all collaborators + task creator
-- **Duplicate prevention**: Tracks `lastNotificationSent` to avoid repeat notifications
+### 📅 Event Scheduler
+
+- **Automated reminders**: Cron job checks upcoming events every minute
+- **10-minute warnings**: Notifies participants before event starts
+- **Multi-recipient delivery**: Alerts all collaborators and task creator
+- **Duplicate prevention**: Tracks sent notifications to avoid spam
 
 ### 🎭 Event-Driven Architecture
-- **ApplicationEventEmitter**: Custom Observer pattern implementation
+
+- **Observer pattern**: Custom `ApplicationEventEmitter` decouples services
 - **Domain events**: `invitation:accepted`, `task:assigned`, `event:created`, etc.
-- **NotificationEventSubscriber**: Listens to domain events and creates notifications
-- **Loose coupling**: Services communicate via events, not direct dependencies
-- **Async event handling**: Parallel execution with Promise.allSettled
+- **Async handling**: Parallel execution with `Promise.allSettled`
+- **Extensible**: Add subscribers without modifying emitters
 
-### 📧 Email System
-- **Factory pattern**: Easy switching between email providers (Nodemailer, SendGrid, Resend)
+### 📧 Email & File Upload
+
+- **Email factory**: Switch providers (Nodemailer, SendGrid, Resend) via env var
 - **HTML templates**: Professional password reset emails
-- **Environment-driven**: Configure provider via `EMAIL_PROVIDER` env var
-- **Extensible design**: Add new providers by implementing `IEmailService`
-
-### 📤 File Upload
-- **Avatar uploads**: Multer middleware for profile pictures
-- **Validation**: Only JPEG/PNG, max 1MB
-- **Secure storage**: Files stored in `/uploads/avatars` with timestamp naming
-- **CORS-enabled serving**: Static file middleware with cross-origin support
-
-### 🛡️ Input Validation
-- **express-validator**: Comprehensive request validation on all endpoints
-- **Custom validators**: MongoDB ID validation, email format, password strength
-- **Centralized error aggregation**: `validationFieldsResult` middleware
-- **Type-safe DTOs**: TypeScript interfaces for all request/response payloads
+- **Avatar uploads**: Multer middleware with JPEG/PNG validation (max 1MB)
+- **Secure storage**: Timestamp-based naming in `/uploads/avatars`
 
 ### 🗄️ Database Features
-- **Mongoose plugins**: `cleanOutput` (sanitization), `mongoose-lean-virtuals`, `mongoose-lean-id`
-- **Virtual fields**: `task.creator`, `task.participants`, `task.events`, `user.contacts`
-- **Automatic sanitization**: Transform `_id` → `id`, remove `__v` and `password`
-- **ObjectId to string conversion**: All IDs returned as strings for frontend compatibility
-- **Indexes**: Optimized queries on `email`, `createdBy`, `categoryId`, `contactsIds`
-- **Timestamps**: Automatic `createdAt` and `updatedAt` fields
+
+- **Mongoose plugins**: Auto-sanitization (`_id` → `id`), virtual fields, lean queries
+- **Indexes**: Optimized queries on `email`, `createdBy`, `categoryId`
+- **Timestamps**: Automatic `createdAt` and `updatedAt`
+- **Frontend-friendly**: ObjectIds as strings, no internal fields exposed
 
 ### 🔧 Developer Experience
-- **TypeScript strict mode**: Full type safety across entire codebase
-- **ESLint + Prettier**: Automated code quality and formatting
-- **Hot reload**: tsx + nodemon for instant development feedback
-- **Centralized error handling**: `ApiError` class with status codes and validation errors
-- **HTTP logging**: Morgan middleware for request/response tracking
-- **Environment validation**: Startup checks for required env variables
 
-### 🚀 CI/CD
-- **GitHub Actions**: Automated lint, typecheck, and build on push/PR
-- **pnpm caching**: Faster CI builds with store path caching
-- **Build artifacts**: Upload dist/ folder for deployment
-- **Frozen lockfile**: Ensures consistent dependencies across environments
+- **TypeScript strict mode**: Full type safety
+- **ESLint + Prettier**: Automated code quality
+- **Hot reload**: tsx + nodemon for instant feedback
+- **Centralized errors**: `ApiError` class with status codes
+- **Input validation**: express-validator on all endpoints
+- **GitHub Actions**: Automated lint, typecheck, build on push/PR
 
 ---
 
@@ -129,252 +115,110 @@ The API manages **Tasks** composed of multiple **Events** (time-boxed work sessi
 
 ### Core
 
-| Technology     | Version | Purpose                                   |
-| -------------- | ------- | ----------------------------------------- |
-| **Node.js**    | ≥18.0.0 | JavaScript runtime for server-side code   |
-| **TypeScript** | 5.8.3   | Type-safe development with strict mode    |
-| **Express**    | 5.1.0   | Web framework for RESTful API             |
-| **MongoDB**    | 8.18.1  | NoSQL database for flexible data modeling |
-| **Mongoose**   | 8.18.1  | ODM for MongoDB with schema validation    |
+| Technology     | Version | Purpose                               |
+| -------------- | ------- | ------------------------------------- |
+| **Node.js**    | ≥18.0.0 | JavaScript runtime                    |
+| **TypeScript** | 5.8.3   | Type-safe development (strict mode)   |
+| **Express**    | 5.1.0   | Web framework for RESTful API         |
+| **MongoDB**    | 8.18.1  | NoSQL database                        |
+| **Mongoose**   | 8.18.1  | MongoDB ODM with schema validation    |
+| **Socket.io**  | 4.7.5   | WebSocket server for real-time events |
+| **node-cron**  | 4.2.1   | Scheduled tasks (event reminders)     |
 
 ### Authentication & Security
 
-| Technology              | Version | Purpose                                |
-| ----------------------- | ------- | -------------------------------------- |
-| **jsonwebtoken**        | 9.0.2   | JWT token generation and verification  |
-| **bcryptjs**            | 3.0.2   | Password hashing with salt             |
-| **google-auth-library** | 10.3.1  | Google OAuth 2.0 integration           |
-| **lusca**               | 1.7.0   | CSRF protection middleware             |
-| **express-session**     | 1.18.2  | Session management                     |
-| **connect-mongo**       | 5.1.0   | MongoDB session store                  |
-| **cookie-parser**       | 1.4.7   | Parse cookies from request headers     |
-| **express-rate-limit**  | 8.1.0   | Rate limiting middleware (500 req/15m) |
-| **cors**                | 2.8.5   | Cross-Origin Resource Sharing          |
+| Technology              | Version | Purpose                       |
+| ----------------------- | ------- | ----------------------------- |
+| **jsonwebtoken**        | 9.0.2   | JWT authentication            |
+| **bcryptjs**            | 3.0.2   | Password hashing              |
+| **google-auth-library** | 10.3.1  | Google OAuth 2.0              |
+| **lusca**               | 1.7.0   | CSRF protection               |
+| **express-session**     | 1.18.2  | Session management            |
+| **connect-mongo**       | 5.1.0   | MongoDB session store         |
+| **express-rate-limit**  | 8.1.0   | Rate limiting (500 req/15min) |
+| **cors**                | 2.8.5   | Cross-Origin Resource Sharing |
 
-### Real-Time & Scheduling
+### Validation & Utilities
 
-| Technology    | Version | Purpose                                    |
-| ------------- | ------- | ------------------------------------------ |
-| **socket.io** | 4.7.5   | WebSocket server for real-time events      |
-| **node-cron** | 4.2.1   | Cron-based task scheduler for notification |
+| Technology            | Version | Purpose                |
+| --------------------- | ------- | ---------------------- |
+| **express-validator** | 7.2.1   | Request validation     |
+| **multer**            | 2.0.2   | File uploads (avatars) |
+| **dayjs**             | 1.11.13 | Date manipulation      |
+| **nodemailer**        | 7.0.5   | Email service          |
+| **morgan**            | 1.10.1  | HTTP request logging   |
+| **dotenv**            | 16.5.0  | Environment variables  |
 
-### Validation & Processing
+### Development Tools
 
-| Technology            | Version | Purpose                                   |
-| --------------------- | ------- | ----------------------------------------- |
-| **express-validator** | 7.2.1   | Request validation middleware             |
-| **multer**            | 2.0.2   | Multipart/form-data for file uploads      |
-| **dayjs**             | 1.11.13 | Lightweight date manipulation and parsing |
-
-### Email
-
-| Technology     | Version | Purpose                            |
-| -------------- | ------- | ---------------------------------- |
-| **nodemailer** | 7.0.5   | Send emails (password reset, etc.) |
-
-### Mongoose Plugins
-
-| Technology                 | Version | Purpose                                      |
-| -------------------------- | ------- | -------------------------------------------- |
-| **mongoose-lean-id**       | 1.0.0   | Transform `_id` to `id` in lean queries      |
-| **mongoose-lean-virtuals** | 2.0.0   | Include virtual fields in lean query results |
-
-### Development & DevOps
-
-| Technology  | Version | Purpose                                    |
-| ----------- | ------- | ------------------------------------------ |
-| **pnpm**    | 10.x    | Fast, disk-efficient package manager       |
-| **tsx**     | 4.19.4  | TypeScript execution engine for dev server |
-| **nodemon** | 3.1.10  | Auto-restart server on file changes        |
-| **rimraf**  | 6.0.1   | Cross-platform `rm -rf` for clean builds   |
-
-### Code Quality
-
-| Technology                           | Version | Purpose                           |
-| ------------------------------------ | ------- | --------------------------------- |
-| **ESLint**                           | 9.26.0  | JavaScript/TypeScript linting     |
-| **Prettier**                         | 3.6.2   | Code formatting                   |
-| **@typescript-eslint/parser**        | 8.43.0  | ESLint parser for TypeScript      |
-| **@typescript-eslint/eslint-plugin** | 8.32.0  | TypeScript-specific linting rules |
-| **eslint-plugin-prettier**           | 5.4.0   | Run Prettier as ESLint rule       |
-| **eslint-config-prettier**           | 10.1.8  | Disable conflicting ESLint rules  |
-
-### Logging
-
-| Technology | Version | Purpose                        |
-| ---------- | ------- | ------------------------------ |
-| **morgan** | 1.10.1  | HTTP request logger middleware |
-
-### Configuration
-
-| Technology | Version | Purpose                    |
-| ---------- | ------- | -------------------------- |
-| **dotenv** | 16.5.0  | Load environment variables |
+| Technology   | Version | Purpose                      |
+| ------------ | ------- | ---------------------------- |
+| **pnpm**     | 10.x    | Package manager              |
+| **tsx**      | 4.19.4  | TypeScript execution for dev |
+| **nodemon**  | 3.1.10  | Auto-restart on file changes |
+| **ESLint**   | 9.26.0  | Code linting                 |
+| **Prettier** | 3.6.2   | Code formatting              |
 
 ---
 
 ## 🏗️ Architecture
 
-### Layered Architecture Pattern
+### Layered Architecture
 
-EvenTask API follows **Clean Architecture** principles with clear separation of concerns:
+EvenTask API follows **Clean Architecture** with clear separation of concerns:
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│  HTTP Request → Express Routes                                   │
-│  - JWT validation middleware                                     │
-│  - express-validator rules                                       │
-│  - CSRF token verification                                       │
-└──────────────────┬──────────────────────────────────────────────┘
-                   ↓
-┌─────────────────────────────────────────────────────────────────┐
-│  Controllers (Presentation Layer)                                │
-│  - AuthController, TaskController, EventController, etc.         │
-│  - toHandler() adapter for Express integration                   │
-│  - Validation result aggregation                                 │
-└──────────────────┬──────────────────────────────────────────────┘
-                   ↓
-┌─────────────────────────────────────────────────────────────────┐
-│  Services (Business Logic Layer)                                 │
-│  - TaskService, EventService, NotificationService, etc.          │
-│  - Domain logic (metadata calculation, event sync)               │
-│  - Emit domain events via ApplicationEventEmitter                │
-│  - MongoDB transactions for atomic operations                    │
-└──────────────────┬──────────────────────────────────────────────┘
-                   ↓
-┌─────────────────────────────────────────────────────────────────┐
-│  Repositories (Data Access Layer)                                │
-│  - MongooseRepository base class                                 │
-│  - TaskRepository, UserRepository, EventRepository, etc.         │
-│  - CRUD operations with type safety                              │
-│  - Session management for transactions                           │
-└──────────────────┬──────────────────────────────────────────────┘
-                   ↓
-┌─────────────────────────────────────────────────────────────────┐
-│  Database (MongoDB with Mongoose)                                │
-│  - Schemas with virtuals and indexes                             │
-│  - cleanOutput plugin (sanitization)                             │
-│  - Automatic _id → id transformation                             │
-└─────────────────────────────────────────────────────────────────┘
+HTTP Request → Routes (JWT + Validation)
+       ↓
+Controllers (Presentation Layer)
+       ↓
+Services (Business Logic + Domain Events)
+       ↓
+Repositories (Data Access Layer)
+       ↓
+MongoDB (Mongoose Models + Plugins)
 ```
+
+**Layer Responsibilities:**
+- **Routes**: JWT validation, CSRF verification, express-validator rules
+- **Controllers**: Request/response handling, validation aggregation
+- **Services**: Business logic, metadata computation, domain event emission
+- **Repositories**: CRUD operations, MongoDB transactions, type-safe queries
+- **Models**: Schemas with virtuals, indexes, sanitization plugins
 
 ### Dependency Injection Container
 
-Located in `src/config/dependencies.ts` (295 lines), the DI container manages all application dependencies:
+**Centralized singleton management** in [src/config/dependencies.ts](src/config/dependencies.ts):
 
-**Key Features:**
-- **Singleton Pattern**: Single instance of each Repository, Service, Controller
-- **Lazy Initialization**: Instances created only when first requested
-- **Centralized Management**: Easy testing and dependency swapping
-- **Type Safety**: Full TypeScript support with interfaces
-
-**Example:**
-```typescript
-// Repository layer
-export function getTaskRepository(): ITaskRepository {
-  if (!taskRepository) {
-    taskRepository = new TaskRepository()
-  }
-  return taskRepository
-}
-
-// Service layer with dependencies
-export function getTaskService(): ITaskService {
-  if (!taskService) {
-    taskService = new TaskServiceImpl(
-      getTaskRepository(),
-      getEventRepository(),
-      getNotificationSystem()
-    )
-  }
-  return taskService
-}
-
-// Controller layer
-export function getTaskController(): TaskController {
-  if (!taskController) {
-    taskController = new TaskController(getTaskService())
-  }
-  return taskController
-}
-```
+- Singleton pattern for all Repositories, Services, Controllers
+- Lazy initialization (created on first request)
+- Easy testing and dependency swapping
+- Full TypeScript type safety
 
 ### Event-Driven Architecture
 
-**ApplicationEventEmitter** implements the Observer pattern for loose coupling:
+**ApplicationEventEmitter** implements Observer pattern for loose coupling:
 
-```typescript
-// Service emits domain event
-await eventEmitter.emit<TaskAssignedEvent>(EVENT_NAMES.TASK_ASSIGNED, {
-  taskId: task.id,
-  participantIds: newParticipants,
-  assignedBy: userId,
-})
-
-// NotificationEventSubscriber listens and reacts
-eventEmitter.on<TaskAssignedEvent>(
-  EVENT_NAMES.TASK_ASSIGNED,
-  async (data) => {
-    // Create notifications for each participant
-    // Send real-time WebSocket message
-    // No direct coupling between services
-  }
-)
-```
-
-**Event Flow:**
-```
-1. User Action (API call)
-       ↓
-2. Service executes business logic
-       ↓
-3. Service emits domain event
-       ↓
-4. NotificationEventSubscriber catches event
-       ↓
-5. Creates notification in database
-       ↓
-6. WebSocketService sends real-time update
-       ↓
-7. Frontend receives instant notification
-```
+**Flow:**
+1. Service executes business logic
+2. Service emits domain event (`task:assigned`, `invitation:accepted`, etc.)
+3. `NotificationEventSubscriber` catches event
+4. Creates notification in database
+5. `WebSocketService` sends real-time update to clients
 
 **Benefits:**
-- ✅ **Decoupling**: Services don't depend on NotificationService
-- ✅ **Extensibility**: Add new subscribers without modifying emitters
-- ✅ **Testability**: Mock event emitter in unit tests
-- ✅ **Async**: Parallel execution with Promise.allSettled
+- Services don't depend on NotificationService
+- Add new subscribers without modifying emitters
+- Testable with mock event emitter
+- Async execution with `Promise.allSettled`
 
-### Base Classes for Generic Operations
+### Base Classes
 
-**IBaseRepository** → **MongooseRepository** → Specific Repository
+**Generic CRUD operations** reduce code duplication:
 
-```typescript
-// Generic CRUD operations
-interface IBaseRepository<E, ID = string> {
-  findAll(): Promise<E[]>
-  findById(id: ID): Promise<E | null>
-  create(dto: CreateDto): Promise<E>
-  update(id: ID, dto: UpdateDto): Promise<E | null>
-  delete(id: ID): Promise<boolean>
-  startSession(): Promise<ClientSession>
-}
-
-// MongoDB implementation
-class MongooseRepository<E, ID> implements IBaseRepository<E, ID> {
-  constructor(protected readonly model: Model<any>) {}
-  // Implementation with toJSON() for sanitization
-}
-
-// Specific repository with custom methods
-class TaskRepository extends MongooseRepository<ITask, string> {
-  async findAllByUser(userId: string): Promise<ITask[]> {
-    // Custom query with population
-  }
-}
-```
-
-**Same pattern for Services and Controllers** → DRY principle
+- `IBaseRepository` → `MongooseRepository` → Specific Repository
+- `IBaseService` → `BaseServiceImpl` → Specific Service
+- `IBaseController` → `BaseControllerImpl` → Specific Controller
 
 ---
 
@@ -382,233 +226,54 @@ class TaskRepository extends MongooseRepository<ITask, string> {
 
 ```
 eventask-api/
-├── .github/
-│   ├── instructions/
-│   │   └── copilot-instructions.md  # Development guidelines and standards
-│   └── workflows/
-│       ├── ci.yml                    # CI/CD pipeline (lint, typecheck, build)
-│       └── codeql.yml                # Security code scanning
-│
-├── uploads/
-│   └── avatars/                      # User profile pictures (generated)
-│
-├── dist/                             # Compiled JavaScript output (generated)
-│
 ├── src/
-│   ├── app.ts                        # Application entry point - HTTP + Socket.io server
-│   │
-│   ├── config/                       # Configuration modules
-│   │   ├── dependencies.ts           # DI Container (295 lines) - Singleton management
-│   │   ├── env.ts                    # Environment validation with required variables
-│   │   ├── uploads.ts                # File upload paths and static middleware
-│   │   │
-│   │   ├── middlewares/              # Global middleware configuration
-│   │   │   ├── ApiError.ts           # Custom error class with statusCode
-│   │   │   ├── cors.ts               # CORS configuration (origins, credentials)
-│   │   │   ├── errorRequestHandler.ts    # Centralized error handler
-│   │   │   ├── expressAdapter.ts     # toHandler() - Controller to Express adapter
-│   │   │   ├── notFoundRouteHandler.ts   # 404 handler
-│   │   │   ├── session.ts            # Express session + MongoDB store
-│   │   │   ├── JWT/
-│   │   │   │   ├── generateJWT.ts    # Create access/refresh tokens
-│   │   │   │   ├── validateAccessJWT.ts  # Verify Bearer token middleware
-│   │   │   │   └── validateRefreshJWT.ts # Verify refresh token from cookie
-│   │   │   └── upload/
-│   │   │       └── uploadAvatarMiddleware.ts # Multer config (1MB, JPEG/PNG)
-│   │   │
-│   │   ├── types/                    # Configuration-related types
-│   │   │   ├── cookies.ts            # Cookie type definitions
-│   │   │   ├── globalEnv.d.ts        # Global environment types
-│   │   │   ├── jwtPayload.ts         # JWT payload interface
-│   │   │   ├── pagination.ts         # Pagination query options
-│   │   │   └── request.ts            # AuthenticatedRequest type
-│   │   │
-│   │   └── websocket/                # Socket.io configuration
-│   │       ├── SocketServer.ts       # Initialize Socket.io with CORS
-│   │       ├── SocketAuth.ts         # JWT authentication for WebSocket
-│   │       └── SocketTypes.ts        # Socket types (AuthenticatedSocket, etc.)
-│   │
+│   ├── app.ts                        # Application entry point
+│   ├── config/                       # Configuration (DI, env, middleware, WebSocket)
+│   │   ├── dependencies.ts           # Dependency Injection container
+│   │   ├── middlewares/              # CORS, JWT, error handling, CSRF
+│   │   ├── websocket/                # Socket.io configuration
+│   │   └── types/                    # Config-related types
 │   ├── controllers/                  # Request handlers (Presentation Layer)
-│   │   ├── base/
-│   │   │   ├── IBaseController.ts    # Generic CRUD controller interface
-│   │   │   └── BaseControllerImpl.ts # Base implementation
-│   │   ├── auth/
-│   │   │   └── AuthControllerImpl.ts # Login, register, Google OAuth, password reset
-│   │   ├── task/
-│   │   │   └── TaskController.ts     # Task CRUD + event synchronization
-│   │   ├── event/
-│   │   │   └── EventController.ts    # Event CRUD operations
-│   │   ├── category/
-│   │   │   └── CategoryController.ts # Category CRUD operations
-│   │   ├── user/
-│   │   │   └── UserController.ts     # Profile, contacts, avatar upload
-│   │   ├── invitation/
-│   │   │   └── InvitationController.ts   # Invitation flow (send, accept, reject)
-│   │   └── notification/
-│   │       └── NotificationController.ts # Notification CRUD + mark as read
-│   │
+│   │   └── {domain}/                 # Auth, Task, Event, User, etc.
 │   ├── services/                     # Business logic layer
-│   │   ├── IBaseService.ts           # Generic service interface
-│   │   ├── BaseServiceImpl.ts        # Base service implementation
-│   │   ├── auth/
-│   │   │   ├── IAuthService.ts
-│   │   │   └── AuthServiceImpl.ts    # JWT generation, bcrypt, Google OAuth
-│   │   ├── task/
-│   │   │   ├── ITaskService.ts
-│   │   │   └── TaskServiceImpl.ts    # Task + events sync, metadata computation
-│   │   ├── event/
-│   │   │   ├── IEventService.ts
-│   │   │   └── EventServiceImpl.ts   # Event CRUD, emit domain events
-│   │   ├── category/
-│   │   │   ├── ICategoryService.ts
-│   │   │   └── CategoryServiceImpl.ts
-│   │   ├── user/
-│   │   │   ├── IUserService.ts
-│   │   │   └── UserServiceImpl.ts    # User profile, contacts management
-│   │   ├── invitation/
-│   │   │   ├── IInvitationService.ts
-│   │   │   └── InvitationServiceImpl.ts  # Emit invitation events
-│   │   ├── notification/
-│   │   │   ├── INotificationService.ts
-│   │   │   └── NotificationServiceImpl.ts    # Notification CRUD
-│   │   ├── websocket/
-│   │   │   └── WebSocketService.ts   # Emit real-time notifications to users
-│   │   ├── scheduler/
-│   │   │   └── EventNotificationScheduler.ts # Cron job for event reminders
-│   │   └── shared/
-│   │       └── email/
-│   │           ├── IEmailService.ts
-│   │           ├── EmailServiceFactory.ts    # Factory pattern
-│   │           ├── NodemailerEmailService.ts
-│   │           └── templates/
-│   │               └── PasswordResetEmail.ts # HTML email templates
-│   │
+│   │   ├── {domain}/                 # Auth, Task, Event, User, etc.
+│   │   ├── scheduler/                # Cron job for event reminders
+│   │   ├── websocket/                # Real-time notifications
+│   │   └── shared/email/             # Email service (Factory pattern)
 │   ├── repositories/                 # Data access layer
-│   │   ├── IBaseRepository.ts        # Generic repository interface
-│   │   ├── MongooseRepository.ts     # Base class with MongoDB sessions
-│   │   ├── task/
-│   │   │   ├── ITaskRepository.ts
-│   │   │   └── TaskRepository.ts     # Task queries (pagination, populate)
-│   │   ├── event/
-│   │   │   ├── IEventRepository.ts
-│   │   │   └── EventRepository.ts    # findByTaskId, findInTimeRange
-│   │   ├── category/
-│   │   │   ├── ICategoryRepository.ts
-│   │   │   └── CategoryRepository.ts
-│   │   ├── user/
-│   │   │   ├── IUserRepository.ts
-│   │   │   └── UserRepository.ts     # findByEmail, findByGoogleId
-│   │   ├── invitation/
-│   │   │   ├── IInvitationRepository.ts
-│   │   │   └── InvitationRepository.ts
-│   │   ├── notification/
-│   │   │   ├── INotificationRepository.ts
-│   │   │   └── NotificationRepository.ts # Filter by type, read status
-│   │   └── token/
-│   │       ├── ITokenRepository.ts
-│   │       └── TokenRepository.ts    # Refresh token persistence
-│   │
-│   ├── databases/
-│   │   └── mongo/
-│   │       ├── config.ts             # MongoDB connection + plugins
-│   │       └── models/
-│   │           ├── cleanOutput.ts    # Plugin: _id → id, sanitization
-│   │           ├── schemas/          # Mongoose schemas
-│   │           │   ├── task.ts       # TaskSchema with virtuals & indexes
-│   │           │   ├── event.ts
-│   │           │   ├── user.ts       # Unique email index
-│   │           │   ├── category.ts
-│   │           │   ├── invitation.ts
-│   │           │   ├── notification.ts
-│   │           │   └── token.ts
-│   │           └── doctypes/         # Mongoose document types
-│   │               ├── task.ts
-│   │               ├── event.ts
-│   │               ├── user.ts
-│   │               └── ...
-│   │
+│   │   └── {domain}/                 # MongoDB queries and transactions
+│   ├── databases/mongo/
+│   │   ├── config.ts                 # MongoDB connection
+│   │   └── models/                   # Mongoose schemas and plugins
 │   ├── routes/                       # Express routers
-│   │   ├── auth.ts                   # POST /api/auth/login, /register, /google-login
-│   │   ├── tasks.ts                  # CRUD /api/tasks with JWT validation
-│   │   ├── events.ts                 # CRUD /api/events
-│   │   ├── category.ts               # CRUD /api/categories
-│   │   ├── user.ts                   # /api/users (profile, contacts, avatar)
-│   │   ├── invitation.ts             # /api/invitations (send, accept, reject)
-│   │   ├── notification.ts           # /api/notifications
-│   │   └── security.ts               # GET /api/security/csrf-token
-│   │
-│   ├── middlewares/                  # Custom middlewares
-│   │   ├── rateLimits.ts             # 500 req / 15 min per IP
+│   │   └── {domain}.ts               # Auth, tasks, events, etc.
+│   ├── middlewares/                  # Custom middleware
+│   │   ├── rateLimits.ts             # Rate limiting (500 req/15min)
 │   │   └── validators/               # express-validator rules
-│   │       ├── validationFieldsResult.ts # Aggregate validation errors
-│   │       ├── taskValidator.ts
-│   │       ├── eventValidator.ts
-│   │       ├── loginValidator.ts
-│   │       ├── registerValidator.ts
-│   │       ├── googleLoginValidator.ts
-│   │       ├── categoryValidator.ts
-│   │       ├── invitationValidator.ts
-│   │       ├── requestPasswordResetValidator.ts
-│   │       ├── resetPasswordValidator.ts
-│   │       └── validateAvatarMiddleware.ts
-│   │
 │   ├── sys-events/                   # Domain event system (Observer pattern)
-│   │   ├── IApplicationEventEmitter.ts   # Event emitter interface
-│   │   ├── ApplicationEventEmitter.ts    # Implementation (Map-based)
-│   │   ├── README.md                 # 247 lines of event system docs
-│   │   ├── subscribers/
-│   │   │   └── NotificationEventSubscriber.ts    # 319 lines - Event handlers
-│   │   ├── types/
-│   │   │   └── sys-events.ts         # Event names & payload types
-│   │   └── utils/
-│   │       └── eventNotificationMapping.ts   # Event → Notification type
-│   │
+│   │   ├── ApplicationEventEmitter.ts
+│   │   ├── subscribers/              # Event handlers
+│   │   └── types/                    # Event names and payloads
 │   ├── types/                        # TypeScript interfaces
-│   │   ├── IBase.ts                  # Base entity (id, createdAt, updatedAt)
-│   │   ├── ITask.ts                  # Task with metadata
-│   │   ├── IEvent.ts                 # Event with status
-│   │   ├── IUser.ts                  # User with contacts
-│   │   ├── ICategory.ts
-│   │   ├── IInvitation.ts            # Invitation status (pending, accepted, rejected)
-│   │   ├── INotification.ts          # Notification types & data
-│   │   ├── IToken.ts                 # Refresh token entity
-│   │   ├── IEmail.ts
+│   │   ├── I{Entity}.ts              # Domain entities
 │   │   └── dtos/                     # Data Transfer Objects
-│   │       ├── auth.ts               # Login, register, refresh DTOs
-│   │       ├── task.ts               # Create/update task DTOs
-│   │       ├── event.ts
-│   │       ├── user.ts
-│   │       ├── notification.ts
-│   │       └── invitation.ts
-│   │
-│   ├── helpers/                      # Utility functions
-│   │   ├── computeTaskMetadata.ts    # Calculate task dates, duration, progress
-│   │   └── sendPasswordResetEmail.ts # Email helper
-│   │
-│   └── models/                       # Deprecated - Use databases/mongo/models
-│       └── Category.ts               # Legacy category model
-│
-├── .eslintrc.cjs                     # ESLint configuration (flat config)
-├── .prettierrc                       # Prettier configuration
-├── eslint.config.js                  # ESLint 9.x flat config
-├── tsconfig.json                     # TypeScript configuration (strict mode)
-├── tsconfig-init.json                # TypeScript default config reference
-├── package.json                      # Dependencies and scripts
-├── pnpm-lock.yaml                    # pnpm lockfile
-├── pnpm-workspace.yaml               # pnpm workspace configuration
-├── Procfile                          # Heroku/Render deployment (web: node dist/app.js)
-├── .gitignore
-└── README.md                         # This file
+│   └── helpers/                      # Utility functions
+├── uploads/avatars/                  # User profile pictures
+├── dist/                             # Compiled JavaScript (generated)
+├── .github/workflows/                # CI/CD pipelines
+├── package.json
+├── tsconfig.json
+└── README.md
 ```
 
 ### 🏛️ Architecture Patterns
 
 - **Feature-based organization**: Modules grouped by domain (auth, task, event, user)
-- **Layered architecture**: Clear separation (Controllers → Services → Repositories → Models)
-- **Dependency Injection**: Centralized container in `config/dependencies.ts`
-- **Type safety**: All types defined in `types/` with strict TypeScript
-- **Event-driven**: Domain events in `sys-events/` for loose coupling
-- **Base classes**: Generic implementations (IBaseRepository, IBaseService, IBaseController)
+- **Layered architecture**: Controllers → Services → Repositories → Models
+- **Dependency Injection**: Centralized singleton container
+- **Event-driven**: Domain events decouple services via Observer pattern
+- **Type safety**: Strict TypeScript with interfaces and generics
+- **Base classes**: Generic CRUD implementations (DRY principle)
 
 ---
 
@@ -753,282 +418,45 @@ pnpm start
 
 ## 🔐 Security
 
-EvenTask API implements multiple layers of security to protect user data and prevent common vulnerabilities.
+EvenTask API implements multiple security layers to protect user data and prevent common vulnerabilities.
 
 ### Authentication Flow
 
-#### JWT Token Strategy
+**JWT Token Strategy:**
+- **Access Token**: Short-lived (15 min), sent in `Authorization: Bearer <token>` header
+- **Refresh Token**: Long-lived (7 days), stored in HTTP-only cookie
+- **Automatic Refresh**: 401 responses trigger token renewal on client-side
+- **Token Persistence**: Refresh tokens stored in MongoDB with rotation
 
-```
-Client Login → Server validates → Returns { accessToken, refreshToken }
-├── accessToken: Short-lived (15min), sent in Authorization header
-└── refreshToken: Long-lived (7 days), stored in HTTP-only cookie
-```
+### Security Features
 
-**Token Lifecycle:**
-1. **Login**: User receives both tokens
-2. **API Requests**: `accessToken` sent in `Authorization: Bearer <token>` header
-3. **Token Expiration**: 401 response triggers refresh flow
-4. **Refresh**: POST `/api/auth/refresh` with refreshToken cookie → new accessToken
-5. **Logout**: POST `/api/auth/logout` invalidates refreshToken in database
-
-#### Automatic Token Refresh (Client-Side)
-
-```typescript
-// Frontend should implement refresh logic on 401 responses
-axios.interceptors.response.use(
-  response => response,
-  async error => {
-    if (error.response?.status === 401) {
-      // Call /api/auth/refresh with credentials
-      const { data } = await axios.post('/api/auth/refresh', {}, { withCredentials: true })
-      // Retry original request with new token
-      error.config.headers['Authorization'] = `Bearer ${data.accessToken}`
-      return axios.request(error.config)
-    }
-    return Promise.reject(error)
-  }
-)
-```
-
-### CSRF Protection
-
-#### Double-Submit Cookie Pattern
-
-```typescript
-// 1. Client requests CSRF token on app load
-GET /api/security/csrf-token
-Response: { csrfToken: "abc123..." }
-
-// 2. Include token in all state-changing requests (POST, PUT, DELETE)
-Headers: {
-  'X-CSRF-Token': 'abc123...',
-  'Cookie': 'eventask.sid=...' // Session cookie with same token
-}
-```
-
-**Why This Works:**
-- CSRF token stored in session cookie (HTTP-only)
-- Client includes token in custom header
-- Attacker cannot read token from different origin (Same-Origin Policy)
-- Server validates both match for state-changing operations
-
-**Implementation:**
-```typescript
-// Middleware: lusca.csrf() validates automatically
-app.use(lusca.csrf())
-
-// Custom header must match session token
-if (req.headers['x-csrf-token'] !== req.session.csrfToken) {
-  throw new Error('CSRF token mismatch')
-}
-```
-
-### Route Protection
-
-#### JWT Validation Middleware
-
-```typescript
-// src/config/middlewares/JWT/validateAccessJWT.ts
-export const validateAccessJWT = (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1]
-  
-  if (!token) {
-    throw new ApiError(401, 'Access token missing.')
-  }
-  
-  const { uid } = jwt.verify(token, env.SECRET_JWT_SEED)
-  req.uid = uid // Inject user ID into request
-  next()
-}
-
-// Usage in routes
-router.get('/api/tasks', validateAccessJWT, taskController.getAll)
-```
-
-**Protection Layers:**
-1. **Token Presence**: Validates `Authorization` header exists
-2. **Signature Verification**: JWT signed with server secret
-3. **Expiration Check**: Token must not be expired
-4. **User Injection**: `req.uid` available in controllers
-
-### HTTP-Only Cookies
-
-**Refresh Token Storage:**
-```typescript
-res.cookie('refreshToken', token, {
-  httpOnly: true,        // Not accessible via JavaScript (XSS protection)
-  secure: NODE_ENV === 'production',  // HTTPS only in production
-  sameSite: NODE_ENV === 'production' ? 'none' : 'lax',  // CSRF protection
-  maxAge: 1000 * 60 * 60 * 24 * 7,  // 7 days
-  path: '/',
-  domain: undefined,     // Browser handles domain automatically
-})
-```
-
-**Security Benefits:**
-- ✅ `httpOnly`: Cannot be accessed via `document.cookie` (XSS protection)
-- ✅ `secure`: Only sent over HTTPS in production
-- ✅ `sameSite`: Prevents CSRF attacks at cookie level
-- ✅ Long expiration: User stays logged in for 7 days
-
-### Input Validation
-
-#### Server-Side Validation with express-validator
-
-```typescript
-// src/middlewares/validators/taskValidator.ts
-export const taskValidations = () => [
-  check('title')
-    .trim()
-    .notEmpty().withMessage('Title is required.')
-    .isLength({ min: 5, max: 100 }).withMessage('Title must be between 5 and 100 characters.')
-    .escape(),
-  check('categoryId')
-    .notEmpty().withMessage('Category ID is required.')
-    .isMongoId().withMessage('Invalid category ID.'),
-  validationFieldsResult,  // Aggregate errors
-]
-
-// Usage in routes
-router.post('/api/tasks', taskValidations(), taskController.create)
-```
-
-**Validation Layers:**
-1. **Format Validation**: Email regex, MongoDB ID format, password strength
-2. **Length Validation**: Minimum/maximum character counts
-3. **Sanitization**: Remove HTML tags, trim whitespace
-4. **Custom Validators**: Business logic validation (e.g., unique email)
-
-### Password Security
-
-```typescript
-// Hash password on registration
-const salt = await bcrypt.genSalt()
-const hash = await bcrypt.hash(password, salt)
-
-// Verify password on login
-const isValid = await bcrypt.compare(password, user.password)
-```
-
-**Best Practices:**
-- ✅ Salt rounds: 10 (default) - Balance between security and performance
-- ✅ Never store plain-text passwords
-- ✅ Hash generated per-user (rainbow table protection)
-
-### Rate Limiting
-
-```typescript
-// src/middlewares/rateLimits.ts
-export const apiRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,  // 15 minutes
-  max: 500,                   // 500 requests per windowMs
-  standardHeaders: true,      // Return rate limit info in RateLimit-* headers
-  message: {
-    error: 'Too many requests, please try again later.',
-    code: 429,
-  },
-})
-
-// Applied globally
-app.use('/api', apiRateLimiter)
-```
-
-**Protection Against:**
-- Brute force attacks
-- DDoS attempts
-- API abuse
-
-### Database Security
-
-#### Mongoose Schema Sanitization
-
-```typescript
-// src/databases/mongo/models/cleanOutput.ts
-// Plugin applied to all schemas
-mongoose.plugin(cleanOutput)
-
-// Transforms output automatically:
-// - _id → id (string)
-// - Remove __v
-// - Remove password field
-// - Convert ObjectIds to strings
-// - Convert Dates to ISO strings
-```
-
-**Benefits:**
-- ✅ Sensitive fields never exposed (password, internal IDs)
-- ✅ Consistent API responses
-- ✅ Frontend-friendly format
-
-### CORS Configuration
-
-```typescript
-// src/config/middlewares/cors.ts
-export const corsMiddleware = () => cors({
-  origin: (origin, callback) => {
-    if (!origin || env.ACCEPTED_ORIGINS.includes(origin)) {
-      return callback(null, true)
-    }
-    return callback(new Error('Not allowed by CORS'), false)
-  },
-  credentials: true,  // Allow cookies
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'],
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-})
-```
-
-### WebSocket Security
-
-#### JWT Authentication on Connection
-
-```typescript
-// src/config/websocket/SocketAuth.ts
-export const authenticateSocket = async (socket, next) => {
-  const token = socket.handshake.auth?.token
-  
-  if (!token) {
-    return next(new Error('Authentication token required'))
-  }
-  
-  const decoded = jwt.verify(token, env.SECRET_JWT_SEED)
-  socket.data = { userId: decoded.uid, authenticated: true }
-  
-  next()
-}
-
-// Client connection
-const socket = io(API_URL, {
-  auth: { token: accessToken },
-  transports: ['websocket'],
-})
-```
-
-**Connection Flow:**
-1. Client sends `accessToken` in handshake
-2. Server validates token before accepting connection
-3. Invalid token → connection rejected
-4. Valid token → user joins `user:${userId}` room
+| Feature                   | Implementation                  | Protection                                       |
+| ------------------------- | ------------------------------- | ------------------------------------------------ |
+| **CSRF Protection**       | Double-submit cookie pattern    | Validates state-changing operations              |
+| **XSS Prevention**        | Access token in memory only     | Never stored in localStorage                     |
+| **HTTP-Only Cookies**     | Refresh token in secure cookie  | JavaScript cannot access                         |
+| **Input Validation**      | express-validator on all routes | Sanitization and type checking                   |
+| **Rate Limiting**         | 500 req/15min per IP            | Prevents brute force and DDoS                    |
+| **Password Hashing**      | bcrypt with salt rounds         | Secure password storage                          |
+| **WebSocket Auth**        | JWT in connection handshake     | Token validated before connection                |
+| **Route Guards**          | validateAccessJWT middleware    | Protects authenticated endpoints                 |
+| **CORS**                  | Whitelist origins               | Allows credentials and custom headers            |
+| **Database Sanitization** | cleanOutput plugin              | Removes sensitive fields (_id → id, no password) |
 
 ### Best Practices Implemented
 
-✅ **JWT in Authorization Header**: Never in URL or localStorage (XSS protection)  
-✅ **Refresh Token in HTTP-Only Cookie**: Safe from JavaScript access  
-✅ **CSRF Token for Mutations**: Validates state-changing operations  
-✅ **Rate Limiting**: Prevents brute force and DDoS  
-✅ **Input Validation**: Server-side validation on all endpoints  
-✅ **Password Hashing**: bcrypt with salt rounds  
-✅ **TypeScript Strict Mode**: Compile-time type safety  
-✅ **MongoDB Transactions**: ACID guarantees for critical operations  
-✅ **cleanOutput Plugin**: Automatic sanitization of responses  
+✅ JWT in Authorization header (not URL/localStorage)  
+✅ Refresh token in HTTP-only cookie  
+✅ CSRF token for mutations (POST, PUT, DELETE)  
+✅ TypeScript strict mode for compile-time safety  
+✅ MongoDB transactions for atomic operations  
+✅ Automatic response sanitization  
 
-### Security Considerations
-
-⚠️ **Environment Variables**: Never commit `.env` with real credentials  
-⚠️ **HTTPS Required**: Always use HTTPS in production  
-⚠️ **Token Expiration**: Monitor and adjust based on security requirements  
-⚠️ **Secrets Rotation**: Rotate JWT secrets periodically in production  
-⚠️ **Session Store**: MongoDB session store for scalability  
+**Security Considerations:**  
+⚠️ Always use HTTPS in production  
+⚠️ Never commit credentials in `.env`  
+⚠️ Rotate JWT secrets periodically  
+⚠️ Frontend security complements backend validation  
 
 ---
 
