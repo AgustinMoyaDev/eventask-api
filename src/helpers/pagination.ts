@@ -64,12 +64,12 @@ export function buildPaginationResult<T>(
  */
 export function normalizePaginationParams(params: IPaginationParams) {
   const page = Math.max(1, params.page || 1)
-  const perPage = Math.min(100, Math.max(1, params.perPage || 20)) // Max 100 items
+  const perPage = Math.min(100, Math.max(1, params.perPage || 20))
 
   return {
     page,
     perPage,
     sortBy: params.sortBy,
-    sortOrder: params.sortOrder || ('asc' as const),
+    sortOrder: params.sortOrder || ('desc' as const),
   }
 }
