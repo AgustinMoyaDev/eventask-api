@@ -8,6 +8,7 @@ import {
   IEventCalendarQueryParams,
   IEventCalendarResult,
 } from '../../types/IEvent.js'
+import { ICreateEventDto } from 'types/dtos/event.js'
 
 export class EventController extends BaseControllerImpl<IEvent, IEventService> {
   async getAllByUser(req: AuthenticatedRequest): Promise<IPaginationResult<IEvent>> {
@@ -34,6 +35,11 @@ export class EventController extends BaseControllerImpl<IEvent, IEventService> {
 
   async updateStatus(id: string, dto: { status: EventStatus }): Promise<IEvent> {
     return this.service.updateStatus(id, dto)
+  }
+
+  async createEvent(dto: ICreateEventDto, userId: string): Promise<IEvent> {
+    const payload = { ...dto, createdBy: userId }
+    return this.service.createEvent(payload, userId)
   }
 
   async assignCollaborator(

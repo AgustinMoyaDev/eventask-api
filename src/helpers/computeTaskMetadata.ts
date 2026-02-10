@@ -1,13 +1,13 @@
 import dayjs from 'dayjs'
 import minMax from 'dayjs/plugin/minMax.js'
 
-import { IEventDto } from '../types/dtos/event.js'
+import { IEventTaskMetadataDto } from '../types/dtos/event.js'
 import { EVENT_STATUS } from '../types/IEvent.js'
 import { TASK_STATUS, TaskMetadata } from '../types/ITask.js'
 
 dayjs.extend(minMax)
 
-export function computeTaskMetadata(events: IEventDto[] = []): TaskMetadata {
+export function computeTaskMetadata(events: IEventTaskMetadataDto[] = []): TaskMetadata {
   const initial: TaskMetadata = {
     beginningDate: '',
     completionDate: '',
@@ -15,6 +15,7 @@ export function computeTaskMetadata(events: IEventDto[] = []): TaskMetadata {
     progress: 0,
     status: TASK_STATUS.PENDING,
   }
+
   if (events.length === 0) return initial
 
   const starts = events.map(e => dayjs(e.start)).filter(d => d.isValid())

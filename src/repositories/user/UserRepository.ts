@@ -27,6 +27,11 @@ export class UserRepository
     super(UserModel)
   }
 
+  async exists(userId: string): Promise<boolean> {
+    const count = await this.model.countDocuments({ _id: userId }).limit(1).exec()
+    return count > 0
+  }
+
   async findContacts(
     userId: string,
     params: IPaginationParams

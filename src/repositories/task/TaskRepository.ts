@@ -5,7 +5,7 @@ import { MongooseRepository } from '../../repositories/MongooseRepository.js'
 import { ITaskRepository } from './ITaskRepository.js'
 
 import { ITask } from '../../types/ITask.js'
-import { ITaskCreateDto, ITaskUpdateDto } from '../../types/dtos/task.js'
+import { ITaskCreateDto, ITaskMetadataUpdateDto } from '../../types/dtos/task.js'
 import { buildSortCriteria, createSortValidator } from '../../helpers/sortValidations.js'
 import {
   calculateSkip,
@@ -66,11 +66,6 @@ export class TaskRepository
     return buildPaginationResult(items, total, page, perPage)
   }
 
-  /**
-   * Gets a task by its ID with its references populated.
-   * @param id Task ID
-   * @returns The sanitized task entity or null
-   */
   async findByIdPopulated(id: string): Promise<ITask | null> {
     const doc = await this.model
       .findById(id)
@@ -89,42 +84,27 @@ export class TaskRepository
     return doc ? doc.toJSON() : null
   }
 
-  /**
-   * Creates a session-based task and returns the populated sanitized task.
-   * @param payload - Data for the new task
-   * @param session - Mongoose session
-   * @returns The sanitized populated task entity or null
-   */
-  async createTask(payload: ITaskCreateDto, session: ClientSession): Promise<ITask | null> {
-    const { title, categoryId, participantsIds, createdBy } = payload
+  async createTask(payload: ITaskCreateDto, userId: string): Promise<ITask | null> {
+    const { title, categoryId } = payload
     const doc = new this.model({
       title,
       categoryId,
-      participantsIds,
-      createdBy,
+      createdBy: userId,
     })
-    await doc.save({ session })
+    await doc.save()
 
     const task = await this.model
       .findById(doc._id)
       .populate(['category', 'participants', 'events'])
-      .session(session)
       .exec()
 
     return task ? task.toJSON() : null
   }
 
-  /**
-   * Updates a task and returns the populated sanitized task.
-   * @param id - Task ID
-   * @param payload - Update data
-   * @param session - Mongoose session
-   * @returns The sanitized updated populated task entity or null
-   */
   async updateTask(
     id: string,
-    payload: ITaskUpdateDto,
-    session: ClientSession
+    payload: ITaskMetadataUpdateDto,
+    session?: ClientSession
   ): Promise<ITask | null> {
     const task = await this.model
       .findByIdAndUpdate(id, { ...payload }, { new: true, session })
@@ -132,5 +112,27 @@ export class TaskRepository
       .exec()
 
     return task ? task.toJSON() : null
+  }
+
+  async addParticipantToTask(taskId: string, participantId: string): Promise<ITask | null> {
+    const updated = await this.model.findByIdAndUpdate(
+      taskId,
+      { $addToSet: { participantsIds: participantId } },
+      { new: true }
+    )
+
+    return updated ? updated.toJSON() : null
+  }
+
+  async removeParticipantFromTask(taskId: string, participantId: string): Promise<ITask | null> {
+    const updated = await this.model
+      .findByIdAndUpdate(taskId, { $pull: { participantsIds: participantId } }, { new: true })
+      .populate('category')
+      .populate('creator')
+      .populate('participants')
+      .populate('events')
+      .exec()
+
+    return updated ? updated.toJSON() : null
   }
 }

@@ -20,17 +20,6 @@ export const taskValidations = (): (ValidationChain | RequestHandler)[] => {
       .bail()
       .isMongoId()
       .withMessage('Invalid category ID.'),
-    check('participantsIds')
-      .optional()
-      .isArray()
-      .withMessage('Participants must be an array of IDs.')
-      .bail(),
-    check('participantsIds.*')
-      .optional()
-      .isMongoId()
-      .withMessage('Each participant must be a valid Mongo ID.'),
-    check('eventsIds').optional().isArray().withMessage('Events must be an array.'),
-    // Global validation fields result
     validationFieldsResult,
   ]
 }

@@ -4,6 +4,7 @@ import { ITaskService } from '../../services/task/ITaskService.js'
 import { IPaginationParams, IPaginationResult } from '../../helpers/pagination.js'
 
 import { AuthenticatedRequest } from '../../config/types/request.js'
+
 import { ITask } from '../../types/ITask.js'
 import { ITaskCreateDto, ITaskUpdateDto } from '../../types/dtos/task.js'
 
@@ -26,15 +27,23 @@ export class TaskController extends BaseControllerImpl<ITask, ITaskService> {
     return this.service.getOnePopulated(id)
   }
 
-  async createTaskWithEvents(userId: string, payload: ITaskCreateDto): Promise<ITask> {
-    return this.service.createWithEvents(payload, userId)
+  async createTask(userId: string, payload: ITaskCreateDto): Promise<ITask> {
+    return this.service.createTask(payload, userId)
   }
 
-  async updateTaskWithEvents(id: string, payload: ITaskUpdateDto, userId: string): Promise<ITask> {
-    return this.service.updateWithEvents(id, payload, userId)
+  async updateTask(id: string, payload: ITaskUpdateDto): Promise<ITask> {
+    return this.service.updateTask(id, payload)
   }
 
   async deleteWithEvents(id: string): Promise<void> {
     return this.service.deleteWithEvents(id)
+  }
+
+  async assignParticipant(taskId: string, participantId: string, userId: string): Promise<ITask> {
+    return this.service.assignParticipant(taskId, participantId, userId)
+  }
+
+  async removeParticipant(taskId: string, participantId: string, userId: string): Promise<ITask> {
+    return this.service.removeParticipant(taskId, participantId, userId)
   }
 }

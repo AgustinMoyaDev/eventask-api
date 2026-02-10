@@ -1,31 +1,33 @@
 import { TaskStatus } from '../../types/ITask.js'
-import { IEventDto } from './event.js'
 
-interface ITaskBaseDto {
+export interface ITaskCreateDto {
   title: string
   categoryId: string
-  participantsIds?: string[]
-  events?: IEventDto[]
 }
 
-export interface ITaskCreateDto extends ITaskBaseDto {
-  createdBy: string
-}
-
-export interface ITaskUpdateDto extends ITaskBaseDto {
-  beginningDate: string
-  completionDate: string
-  status: TaskStatus
-  duration: number
-  progress: number
+/**
+ * DTO for updating task basic info (client-facing).
+ * User can only modify title and category.
+ */
+export interface ITaskUpdateDto {
+  title?: string
+  categoryId?: string
   eventsIds?: string[]
+  participantsIds?: string[]
 }
 
-export interface ITaskListDto {
-  id: string
-  title: string
-  status: TaskStatus
-  categoryName: string
-  participants?: { id: string; firstName: string }[]
-  events?: { id: string; title: string; collaborators?: { id: string }[] }[]
+/**
+ * DTO for internal metadata updates (used by Event/Task services).
+ * Includes computed fields and relationships.
+ */
+export interface ITaskMetadataUpdateDto {
+  title?: string
+  categoryId?: string
+  participantsIds?: string[]
+  eventsIds?: string[]
+  beginningDate?: string
+  completionDate?: string
+  status?: TaskStatus
+  duration?: number
+  progress?: number
 }

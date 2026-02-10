@@ -161,6 +161,7 @@ export function getTaskService(): ITaskService {
     taskService = new TaskServiceImpl(
       getTaskRepository(),
       getEventRepository(),
+      getUserRepository(),
       getNotificationSystem()
     )
   }

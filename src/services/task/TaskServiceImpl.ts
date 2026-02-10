@@ -1,14 +1,15 @@
-import { BaseServiceImpl } from '../../services/BaseServiceImpl.js'
 import { ITaskService } from './ITaskService.js'
+
+import { BaseServiceImpl } from '../../services/BaseServiceImpl.js'
 import { ITaskRepository } from '../../repositories/task/ITaskRepository.js'
 import { IEventRepository } from '../../repositories/event/IEventRepository.js'
+import { IUserRepository } from '../../repositories/user/IUserRepository.js'
+
 import { ApiError } from '../../config/middlewares/ApiError.js'
 
 import { ITask } from '../../types/ITask.js'
-import { IEvent } from '../../types/IEvent.js'
-import { ITaskCreateDto, ITaskUpdateDto } from '../../types/dtos/task.js'
+import { ITaskCreateDto, ITaskUpdateDto } from 'types/dtos/task.js'
 
-import { computeTaskMetadata } from '../../helpers/computeTaskMetadata.js'
 import { IPaginationParams, IPaginationResult } from '../../helpers/pagination.js'
 import {
   EVENT_NAMES,
@@ -26,6 +27,7 @@ export class TaskServiceImpl
   constructor(
     protected readonly repository: ITaskRepository,
     private readonly eventRepository: IEventRepository,
+    private readonly userRepository: IUserRepository,
     private readonly eventEmitter: IApplicationEventEmitter
   ) {
     super(repository)
@@ -43,162 +45,41 @@ export class TaskServiceImpl
     return task
   }
 
-  async createWithEvents(dto: ITaskCreateDto, userId: string): Promise<ITask> {
-    const session = await this.repository.startSession()
-    session.startTransaction()
-    try {
-      const { title, categoryId, participantsIds, events = [] } = dto
+  async createTask(dto: ITaskCreateDto, userId: string): Promise<ITask> {
+    const task = await this.repository.createTask(dto, userId)
 
-      const task = await this.repository.createTask(
-        { title, categoryId, participantsIds, createdBy: userId },
-        session
-      )
-
-      if (!task) throw new ApiError(404, 'Task not found.')
-
-      const createdEvents = await Promise.all<IEvent>(
-        events.map(async ev => {
-          if (!ev) throw new ApiError(404, 'Event could not be found.')
-          const created = await this.eventRepository.createEventWithSession(
-            ev,
-            userId,
-            task.id,
-            session
-          )
-          if (!created) throw new ApiError(404, 'Event could not be created.')
-          return created
-        })
-      )
-      const eventsIds = createdEvents.map(e => e.id)
-
-      const { beginningDate, completionDate, duration, progress, status } =
-        computeTaskMetadata(events)
-
-      const updated = await this.repository.updateTask(
-        task.id,
-        {
-          title: task.title,
-          categoryId: task.categoryId,
-          participantsIds: task.participantsIds,
-          eventsIds,
-          status,
-          beginningDate,
-          completionDate,
-          duration,
-          progress,
-        },
-        session
-      )
-      if (!updated) throw new ApiError(404, 'Task not found on update.')
-
-      await session.commitTransaction()
-
-      this.notifyAssignedTaskParticipants(updated)
-
-      return updated
-    } catch (err) {
-      await session.abortTransaction()
-      throw err
-    } finally {
-      session.endSession()
+    if (!task) {
+      throw new ApiError(500, 'Failed to create task.')
     }
+
+    return task
   }
 
-  async updateWithEvents(id: string, dto: ITaskUpdateDto, userId: string): Promise<ITask> {
-    const session = await this.repository.startSession()
-    session.startTransaction()
-    try {
-      // Validate existence
-      const originalTask = await this.repository.findById(id)
-      if (!originalTask) throw new ApiError(404, 'Task not found.')
-
-      // Synchronize events: create/update/delete
-      const currentEvents = await this.eventRepository.findByTaskId(id, session)
-      const map = new Map(currentEvents.map(e => [e.id, e]))
-      const newIds: string[] = []
-
-      const { title, categoryId, participantsIds = [], events = [] } = dto
-      for (const ev of events) {
-        if (ev.id && map.has(ev.id)) {
-          const updatedEv = await this.eventRepository.updateEventWithSession(ev.id, ev, session)
-          if (!updatedEv) throw new ApiError(404, 'The event could not be updated.')
-          newIds.push(updatedEv.id)
-          map.delete(ev.id)
-        } else {
-          const createdEv = await this.eventRepository.createEventWithSession(
-            ev,
-            userId,
-            id,
-            session
-          )
-          if (!createdEv) throw new ApiError(404, 'The event could not be created.')
-          newIds.push(createdEv.id)
-        }
-      }
-      // eliminate leftovers
-      if (map.size) {
-        await this.eventRepository.deleteManyByIds(Array.from(map.keys()), session)
-      }
-
-      // Recalculate metadata
-      const { beginningDate, completionDate, duration, progress, status } =
-        computeTaskMetadata(events)
-
-      const updated = await this.repository.updateTask(
-        id,
-        {
-          title,
-          status,
-          categoryId,
-          participantsIds,
-          eventsIds: newIds,
-          beginningDate,
-          completionDate,
-          duration,
-          progress,
-        },
-        session
-      )
-      if (!updated) throw new ApiError(404, 'Task not found.')
-
-      this.notifyAssignedTaskParticipants(updated)
-      this.notifyDeallocatedTaskParticipants(updated, originalTask.participantsIds ?? [])
-      await session.commitTransaction()
-
-      return updated
-    } catch (err) {
-      await session.abortTransaction()
-      throw err
-    } finally {
-      session.endSession()
+  async updateTask(id: string, dto: ITaskUpdateDto): Promise<ITask> {
+    const updated = await this.repository.update(id, dto)
+    if (!updated) {
+      throw new ApiError(404, 'Task not found.')
     }
+    return updated
   }
 
-  private notifyAssignedTaskParticipants(task: ITask) {
-    task.participantsIds.forEach(pId => {
-      this.eventEmitter.emit<TaskAssignedEvent>(EVENT_NAMES.TASK_ASSIGNED, {
-        taskId: task.id,
-        assignedTo: pId,
-        taskTitle: task.title,
-        assignedBy: task.createdBy,
-        timestamp: new Date(),
-      })
+  private notifyAssignedTaskParticipant(task: ITask, participantId: string) {
+    this.eventEmitter.emit<TaskAssignedEvent>(EVENT_NAMES.TASK_ASSIGNED, {
+      taskId: task.id,
+      assignedTo: participantId,
+      taskTitle: task.title,
+      assignedBy: task.createdBy,
+      timestamp: new Date(),
     })
   }
 
-  private notifyDeallocatedTaskParticipants(task: ITask, oldParticipants: string[]) {
-    const deallocatedParticipants = oldParticipants?.filter(
-      pId => !task.participantsIds.includes(pId)
-    )
-
-    deallocatedParticipants.forEach(dId => {
-      this.eventEmitter.emit<TaskDeallocatedEvent>(EVENT_NAMES.TASK_DEALLOCATED, {
-        taskId: task.id,
-        deallocatedFrom: dId,
-        taskTitle: task.title,
-        deallocatedBy: task.createdBy,
-        timestamp: new Date(),
-      })
+  private notifyDeallocatedTaskParticipant(task: ITask, participantId: string) {
+    this.eventEmitter.emit<TaskDeallocatedEvent>(EVENT_NAMES.TASK_DEALLOCATED, {
+      taskId: task.id,
+      deallocatedFrom: participantId,
+      taskTitle: task.title,
+      deallocatedBy: task.createdBy,
+      timestamp: new Date(),
     })
   }
 
@@ -226,5 +107,81 @@ export class TaskServiceImpl
     } finally {
       session.endSession()
     }
+  }
+
+  async assignParticipant(taskId: string, participantId: string, userId: string): Promise<ITask> {
+    // Validate task exists
+    const task = await this.repository.findById(taskId)
+    if (!task) {
+      throw new ApiError(404, 'Task not found.')
+    }
+
+    // Validate participant exists
+    const userExists = await this.userRepository.exists(participantId)
+    if (!userExists) {
+      throw new ApiError(404, 'User not found.')
+    }
+
+    const isCreator = task.createdBy === userId
+    const isParticipant = task.participantsIds.includes(userId)
+
+    if (!isCreator && !isParticipant) {
+      throw new ApiError(403, 'You do not have permission to assign participants to this task.')
+    }
+
+    // Check if already assigned (for event emission logic)
+    const alreadyAssigned = task.participantsIds.includes(participantId)
+
+    // Add participant (idempotent operation)
+    const updatedTask = await this.repository.addParticipantToTask(taskId, participantId)
+
+    if (!updatedTask) {
+      throw new ApiError(500, 'Failed to assign participant.')
+    }
+
+    // Emit event only if participant was newly assigned
+    if (!alreadyAssigned) {
+      this.notifyAssignedTaskParticipant(updatedTask, participantId)
+    }
+
+    return updatedTask
+  }
+
+  async removeParticipant(taskId: string, participantId: string, userId: string): Promise<ITask> {
+    // Validate task exists
+    const task = await this.repository.findById(taskId)
+    if (!task) {
+      throw new ApiError(404, 'Task not found.')
+    }
+
+    // Validate participant (user) exists
+    const userExists = await this.userRepository.exists(participantId)
+    if (!userExists) {
+      throw new ApiError(404, 'User not found.')
+    }
+
+    const isCreator = task.createdBy === userId
+    const isParticipant = task.participantsIds.includes(userId)
+
+    if (!isCreator && !isParticipant) {
+      throw new ApiError(403, 'You do not have permission to remove participants from this task.')
+    }
+
+    // Check if participant is currently assigned (for event emission)
+    const isCurrentlyAssigned = task.participantsIds.includes(participantId)
+
+    // Remove participant (idempotent operation)
+    const updatedTask = await this.repository.removeParticipantFromTask(taskId, participantId)
+
+    if (!updatedTask) {
+      throw new ApiError(500, 'Failed to remove participant.')
+    }
+
+    // Emit event only if participant was actually removed
+    if (isCurrentlyAssigned) {
+      this.notifyDeallocatedTaskParticipant(updatedTask, participantId)
+    }
+
+    return updatedTask
   }
 }

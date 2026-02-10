@@ -1,7 +1,7 @@
 import { ClientSession } from 'mongoose'
 
 import { IBaseRepository } from '../../repositories/IBaseRepository.js'
-import { IEventDto } from '../../types/dtos/event.js'
+import { ICreateEventDto, UpdateEventDto } from '../../types/dtos/event.js'
 import { IEvent, IEventCalendarResult } from '../../types/IEvent.js'
 import { IPaginationParams, IPaginationResult } from '../../helpers/pagination.js'
 
@@ -59,9 +59,8 @@ export interface IEventRepository extends IBaseRepository<
    * @param session Transaction session.
    */
   createEventWithSession(
-    payload: IEventDto,
+    payload: ICreateEventDto,
     userId: string,
-    taskId: string,
     session: ClientSession
   ): Promise<IEvent | null>
 
@@ -72,7 +71,7 @@ export interface IEventRepository extends IBaseRepository<
    * @param session Transaction session. */
   updateEventWithSession(
     id: string,
-    payload: IEventDto,
+    payload: UpdateEventDto,
     session: ClientSession
   ): Promise<IEvent | null>
 
