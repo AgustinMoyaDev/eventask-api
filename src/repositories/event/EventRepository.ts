@@ -130,10 +130,9 @@ export class EventRepository
   async createEventWithSession(
     payload: ICreateEventDto,
     userId: string,
-    taskId: string,
     session: ClientSession
   ): Promise<IEvent | null> {
-    const doc = new EventModel({ ...payload, createdBy: userId, taskId, status: payload.status })
+    const doc = new EventModel({ ...payload, createdBy: userId, status: payload.status })
     await doc.save({ session })
     const event = await EventModel.findById(doc._id).session(session).exec()
     return event ? (event.toJSON() as unknown as IEvent) : null

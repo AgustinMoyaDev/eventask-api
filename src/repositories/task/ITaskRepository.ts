@@ -19,7 +19,43 @@ export interface ITaskRepository extends IBaseRepository<
    * @returns Paginated result with metadata
    */
   findAllByUser(userId: string, params: IPaginationParams): Promise<IPaginationResult<ITask>>
+  /**
+   * Gets a task by its ID with its references populated.
+   * @param id Task ID
+   * @returns The sanitized task entity or null
+   */
   findByIdPopulated(id: string): Promise<ITask | null>
-  createTask(payload: ITaskCreateDto, session: ClientSession): Promise<ITask | null>
-  updateTask(id: string, dto: ITaskUpdateDto, session: ClientSession): Promise<ITask | null>
+  /**
+   * Creates a session-based task and returns the populated sanitized task.
+   * @param payload - Data for the new task
+   * @param userId - ID of the user creating the task
+   * @returns The sanitized populated task entity or null
+   */
+  createTask(payload: ITaskCreateDto, userId: string): Promise<ITask | null>
+  /**
+   * Updates a task and returns the populated sanitized task.
+   * @param id - Task ID
+   * @param payload - Update data
+   * @param userId - ID of the user creating the task
+   * @returns The sanitized updated populated task entity or null
+   */
+  updateTask(id: string, dto: ITaskUpdateDto, session?: ClientSession): Promise<ITask | null>
+  /**
+   * Adds a participant to task's participantsIds array (idempotent).
+   * Does NOT check permissions or validate existence.
+   *
+   * @param taskId - Task ID
+   * @param participantId - User ID to add
+   * @returns Updated task with populated references, or null if task not found
+   */
+  addParticipantToTask(taskId: string, participantId: string): Promise<ITask | null>
+  /**
+   * Removes a participant from task's participantsIds array (idempotent).
+   * Does NOT check permissions or validate existence.
+   *
+   * @param taskId - Task ID
+   * @param participantId - User ID to remove
+   * @returns Updated task with populated references, or null if task not found
+   */
+  removeParticipantFromTask(taskId: string, participantId: string): Promise<ITask | null>
 }

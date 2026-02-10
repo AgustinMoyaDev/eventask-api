@@ -11,6 +11,12 @@ export interface IUserRepository extends IBaseRepository<
   Partial<Omit<IUser, 'id'>>
 > {
   /**
+   * Checks if a user exists by ID without loading the full document.
+   * @param userId - The user's ID
+   * @returns true if user exists, false otherwise
+   */
+  exists(userId: string): Promise<boolean>
+  /**
    * Finds contacts of a user with pagination.
    * @param userId - The ID of the user whose contacts are to be found.
    * @param params - Pagination parameters.

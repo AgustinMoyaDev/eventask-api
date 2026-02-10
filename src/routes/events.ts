@@ -38,7 +38,7 @@ router.get(
 router.post(
   '/',
   eventValidations(),
-  toHandler<AuthenticatedRequest>(req => controller.create(req.body))
+  toHandler<AuthenticatedRequest>(req => controller.createEvent(req.body, req.uid!))
 )
 router.put(
   '/:id/collaborators/:collaboratorId',

@@ -7,6 +7,7 @@ import { IEventService } from './IEventService.js'
 
 import { TASK_STATUS } from '../../types/ITask.js'
 import { EventStatus, IEvent, IEventCalendarResult } from '../../types/IEvent.js'
+import { ICreateEventDto } from '../../types/dtos/event.js'
 
 import { IApplicationEventEmitter } from '../../sys-events/IApplicationEventEmitter.js'
 import {
@@ -19,6 +20,7 @@ import { computeTaskMetadata } from '../../helpers/computeTaskMetadata.js'
 import { IPaginationParams, IPaginationResult } from '../../helpers/pagination.js'
 
 import { ApiError } from '../../config/middlewares/ApiError.js'
+import { ITaskMetadataUpdateDto } from 'types/dtos/task.js'
 
 export class EventServiceImpl
   extends BaseServiceImpl<IEvent, string, Omit<IEvent, 'id'>, Partial<Omit<IEvent, 'id'>>>
@@ -33,6 +35,62 @@ export class EventServiceImpl
     private readonly eventEmitter: IApplicationEventEmitter
   ) {
     super(eventRepository)
+  }
+
+  async createEvent(dto: ICreateEventDto, userId: string): Promise<IEvent> {
+    const session = await this.eventRepository.startSession()
+    session.startTransaction()
+    try {
+      const task = await this.taskRepository.findById(dto.taskId)
+      if (!task) {
+        throw new ApiError(404, 'Task not found.')
+      }
+
+      const newEvent = await this.eventRepository.createEventWithSession(dto, userId, session)
+
+      if (!newEvent) {
+        throw new ApiError(500, 'Failed to create event.')
+      }
+
+      // Add event ID to task
+      const updatedEventsIds = [...task.eventsIds, newEvent.id]
+
+      // Fetch all events for metadata calculation
+      const allEvents = await this.eventRepository.findByTaskId(dto.taskId, session)
+
+      // Recalculate task metadata
+      const eventsData = allEvents.map(e => ({
+        start: e.start,
+        end: e.end,
+        status: e.status,
+      }))
+      const { beginningDate, completionDate, duration, progress, status } =
+        computeTaskMetadata(eventsData)
+
+      const taskMetadataDto: ITaskMetadataUpdateDto = {
+        eventsIds: updatedEventsIds,
+        beginningDate,
+        completionDate,
+        duration,
+        progress,
+        status,
+      }
+
+      // Update task with new event and metadata
+      const updatedTask = await this.taskRepository.updateTask(dto.taskId, taskMetadataDto, session)
+
+      if (!updatedTask) {
+        throw new ApiError(500, 'Failed to update task metadata.')
+      }
+
+      await session.commitTransaction()
+      return newEvent
+    } catch (err) {
+      await session.abortTransaction()
+      throw err
+    } finally {
+      session.endSession()
+    }
   }
 
   async getAllByUser(

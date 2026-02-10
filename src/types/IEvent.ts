@@ -16,14 +16,14 @@ export interface IEvent extends IBase {
   notes: string
   start: string
   end: string
-  lastNotificationSent: Date
+  lastNotificationSent?: Date
   taskId: string
   createdBy: string
   collaboratorsIds: string[]
   // optional virtual fields after populated()
   task?: ITask
   creator?: IUser
-  collaborators: IUser[]
+  collaborators?: IUser[]
 }
 
 /**
