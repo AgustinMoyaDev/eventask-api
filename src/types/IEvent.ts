@@ -4,8 +4,8 @@ import { IBase } from './IBase.js'
 
 export const EVENT_STATUS = {
   PENDING: 'pending',
-  PROGRESS: 'in_progress',
-  COMPLETED: 'done',
+  PROGRESS: 'in-progress',
+  COMPLETED: 'completed',
 } as const
 
 export type EventStatus = (typeof EVENT_STATUS)[keyof typeof EVENT_STATUS]
