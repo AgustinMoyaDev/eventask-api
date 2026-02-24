@@ -1,6 +1,6 @@
 import { IBaseService } from '../../services/IBaseService.js'
 
-import { IPaginationParams, IPaginationResult } from '../../helpers/pagination.js'
+import { IPaginationOptions, IPaginationResult } from '../../helpers/pagination.js'
 
 import { ITask } from '../../types/ITask.js'
 import { ITaskCreateDto, ITaskMetadataUpdateDto } from 'types/dtos/task.js'
@@ -14,7 +14,7 @@ export interface ITaskService extends IBaseService<
   /**
    * Gets all tasks for a user, populated and sorted
    */
-  getAllByUser(userId: string, params: IPaginationParams): Promise<IPaginationResult<ITask>>
+  getAllByUser(userId: string, params: IPaginationOptions): Promise<IPaginationResult<ITask>>
   /**
    * Get a task by ID, throw 404 if it doesn't exist
    */

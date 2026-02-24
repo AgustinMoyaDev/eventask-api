@@ -1,6 +1,6 @@
 import { IPaginationResult } from '../../helpers/pagination.js'
 import { IBaseRepository } from '../../repositories/IBaseRepository.js'
-import { INotification, INotificationPaginationParams } from '../../types/INotification.js'
+import { INotification, INotificationQueryOptions } from '../../types/INotification.js'
 
 /**
  * Contract for notification repository operations.
@@ -20,7 +20,7 @@ export interface INotificationRepository extends IBaseRepository<
    */
   findByUserId(
     userId: string,
-    params?: INotificationPaginationParams
+    params?: INotificationQueryOptions
   ): Promise<IPaginationResult<INotification>>
 
   /**

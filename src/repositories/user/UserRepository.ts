@@ -10,7 +10,7 @@ import { buildSortCriteria, createSortValidator } from '../../helpers/sortValida
 import {
   buildPaginationResult,
   calculateSkip,
-  IPaginationParams,
+  IPaginationOptions,
   IPaginationResult,
   normalizePaginationParams,
 } from '../../helpers/pagination.js'
@@ -34,7 +34,7 @@ export class UserRepository
 
   async findContacts(
     userId: string,
-    params: IPaginationParams
+    params: IPaginationOptions
   ): Promise<IPaginationResult<IUserDto>> {
     const { page, perPage, sortBy, sortOrder } = normalizePaginationParams(params)
     const skip = calculateSkip(page, perPage)

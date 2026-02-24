@@ -2,15 +2,17 @@ import { IBase } from '../types/IBase.js'
 import { IUserDto } from './dtos/user.js'
 
 export interface IUser extends IBase {
+  profileImageURL: string
   firstName: string
   lastName: string
   email: string
   password: string
-  profileImageURL: string
   contactsIds: string[]
   isEmailVerified?: boolean
-  googleId?: string
   hasManualPassword?: boolean
-  // optional fields after populated()
-  contacts?: IUserDto[]
+  googleId?: string
+}
+
+export interface IUserPopulated extends IUser {
+  contacts: IUserDto[]
 }

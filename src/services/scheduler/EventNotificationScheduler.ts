@@ -84,7 +84,7 @@ export class EventNotificationScheduler {
 
     upcomingEvents.forEach(async event => {
       // Get all participants and creator
-      const recipients = [...event.collaboratorsIds, event.task?.createdBy]
+      const recipients = [...(event.collaboratorsIds ?? []), event.createdBy]
 
       for (const userId of recipients) {
         const notification: INotification = {
@@ -94,7 +94,7 @@ export class EventNotificationScheduler {
           type: getNotificationTypeFromEvent(EVENT_NAMES.EVENT_REMINDER),
           data: {
             eventId: event.id,
-            taskId: event.task?.id,
+            taskId: event.taskId,
             eventStart: event.start,
             minutesUntilStart: minutesAhead,
           },

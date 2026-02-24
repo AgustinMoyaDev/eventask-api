@@ -12,7 +12,7 @@ import { INotificationRepository } from './INotificationRepository.js'
 
 import { NotificationModel } from '../../databases/mongo/models/schemas/notification.js'
 
-import { INotification, INotificationPaginationParams } from '../../types/INotification.js'
+import { INotification, INotificationQueryOptions } from '../../types/INotification.js'
 
 const ALLOWED_SORT_FIELDS = ['createdAt', 'read', 'type'] as const
 const { isAllowedField } = createSortValidator(ALLOWED_SORT_FIELDS)
@@ -42,7 +42,7 @@ export class NotificationRepository
    */
   async findByUserId(
     userId: string,
-    params: INotificationPaginationParams = {}
+    params: INotificationQueryOptions = {}
   ): Promise<IPaginationResult<INotification>> {
     // Normalize parameters
     const { page, perPage, sortBy, sortOrder, read, type } = {

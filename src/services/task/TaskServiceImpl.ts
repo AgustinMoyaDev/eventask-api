@@ -10,7 +10,7 @@ import { ApiError } from '../../config/middlewares/ApiError.js'
 import { ITask } from '../../types/ITask.js'
 import { ITaskCreateDto, ITaskUpdateDto } from 'types/dtos/task.js'
 
-import { IPaginationParams, IPaginationResult } from '../../helpers/pagination.js'
+import { IPaginationOptions, IPaginationResult } from '../../helpers/pagination.js'
 import {
   EVENT_NAMES,
   TaskAssignedEvent,
@@ -33,7 +33,10 @@ export class TaskServiceImpl
     super(repository)
   }
 
-  async getAllByUser(userId: string, params: IPaginationParams): Promise<IPaginationResult<ITask>> {
+  async getAllByUser(
+    userId: string,
+    params: IPaginationOptions
+  ): Promise<IPaginationResult<ITask>> {
     return await this.repository.findAllByUser(userId, params)
   }
 
@@ -123,14 +126,14 @@ export class TaskServiceImpl
     }
 
     const isCreator = task.createdBy === userId
-    const isParticipant = task.participantsIds.includes(userId)
+    const isParticipant = task.participantsIds?.includes(userId)
 
     if (!isCreator && !isParticipant) {
       throw new ApiError(403, 'You do not have permission to assign participants to this task.')
     }
 
     // Check if already assigned (for event emission logic)
-    const alreadyAssigned = task.participantsIds.includes(participantId)
+    const alreadyAssigned = task.participantsIds?.includes(participantId)
 
     // Add participant (idempotent operation)
     const updatedTask = await this.repository.addParticipantToTask(taskId, participantId)
@@ -161,14 +164,14 @@ export class TaskServiceImpl
     }
 
     const isCreator = task.createdBy === userId
-    const isParticipant = task.participantsIds.includes(userId)
+    const isParticipant = task.participantsIds?.includes(userId)
 
     if (!isCreator && !isParticipant) {
       throw new ApiError(403, 'You do not have permission to remove participants from this task.')
     }
 
     // Check if participant is currently assigned (for event emission)
-    const isCurrentlyAssigned = task.participantsIds.includes(participantId)
+    const isCurrentlyAssigned = task.participantsIds?.includes(participantId)
 
     // Remove participant (idempotent operation)
     const updatedTask = await this.repository.removeParticipantFromTask(taskId, participantId)

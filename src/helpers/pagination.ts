@@ -1,7 +1,7 @@
 /**
  * Pagination parameters for queries
  */
-export interface IPaginationParams {
+export interface IPaginationOptions {
   page?: number
   perPage?: number
   sortBy?: string
@@ -62,7 +62,7 @@ export function buildPaginationResult<T>(
  * @param params - Raw pagination parameters
  * @returns Normalized safe parameters
  */
-export function normalizePaginationParams(params: IPaginationParams) {
+export function normalizePaginationParams(params: IPaginationOptions) {
   const page = Math.max(1, params.page || 1)
   const perPage = Math.min(100, Math.max(1, params.perPage || 20))
 

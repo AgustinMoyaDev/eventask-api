@@ -7,10 +7,10 @@ import { TASK_STATUS, TaskMetadata } from '../types/ITask.js'
 
 dayjs.extend(minMax)
 
-export function computeTaskMetadata(events: IEventTaskMetadataDto[] = []): TaskMetadata {
+export function computeTaskMetadata(events: IEventTaskMetadataDto[]): TaskMetadata {
   const initial: TaskMetadata = {
-    beginningDate: '',
-    completionDate: '',
+    beginningDate: undefined,
+    completionDate: undefined,
     duration: 0,
     progress: 0,
     status: TASK_STATUS.PENDING,
@@ -48,8 +48,8 @@ export function computeTaskMetadata(events: IEventTaskMetadataDto[] = []): TaskM
         : TASK_STATUS.PENDING
 
   return {
-    beginningDate: minStart.toISOString(),
-    completionDate: maxEnd.toISOString(),
+    beginningDate: minStart.toDate(),
+    completionDate: maxEnd.toDate(),
     duration,
     progress,
     status,

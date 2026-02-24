@@ -1,9 +1,9 @@
 import { ClientSession } from 'mongoose'
 
 import { IBaseRepository } from '../../repositories/IBaseRepository.js'
-import { ICreateEventDto, UpdateEventDto } from '../../types/dtos/event.js'
+import { ICreateEventDto, IUpdateEventDto } from '../../types/dtos/event.js'
 import { IEvent, IEventCalendarResult } from '../../types/IEvent.js'
-import { IPaginationParams, IPaginationResult } from '../../helpers/pagination.js'
+import { IPaginationOptions, IPaginationResult } from '../../helpers/pagination.js'
 
 export interface IEventRepository extends IBaseRepository<
   IEvent,
@@ -32,7 +32,7 @@ export interface IEventRepository extends IBaseRepository<
    * Gets the events created by a user.
    * @param userId ID of the creator user.
    */
-  findAllByUser(userId: string, params: IPaginationParams): Promise<IPaginationResult<IEvent>>
+  findAllByUser(userId: string, params: IPaginationOptions): Promise<IPaginationResult<IEvent>>
 
   /**
    * Find events by user and month for calendar view.
@@ -66,14 +66,9 @@ export interface IEventRepository extends IBaseRepository<
 
   /**
    * Updates an event and returns the Event.
-   * @param id Event ID.
    * @param payload Fields to update.
    * @param session Transaction session. */
-  updateEventWithSession(
-    id: string,
-    payload: UpdateEventDto,
-    session: ClientSession
-  ): Promise<IEvent | null>
+  updateEventWithSession(payload: IUpdateEventDto, session: ClientSession): Promise<IEvent | null>
 
   /**
    * Deletes multiple events and returns nothing.
