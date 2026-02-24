@@ -7,7 +7,7 @@ import { IEventService } from './IEventService.js'
 
 import { TASK_STATUS } from '../../types/ITask.js'
 import { EventStatus, IEvent, IEventCalendarResult } from '../../types/IEvent.js'
-import { ICreateEventDto } from '../../types/dtos/event.js'
+import { ICreateEventDto, IUpdateEventDto } from '../../types/dtos/event.js'
 
 import { IApplicationEventEmitter } from '../../sys-events/IApplicationEventEmitter.js'
 import {
@@ -17,7 +17,7 @@ import {
 } from '../../sys-events/types/sys-events.js'
 
 import { computeTaskMetadata } from '../../helpers/computeTaskMetadata.js'
-import { IPaginationParams, IPaginationResult } from '../../helpers/pagination.js'
+import { IPaginationOptions, IPaginationResult } from '../../helpers/pagination.js'
 
 import { ApiError } from '../../config/middlewares/ApiError.js'
 import { ITaskMetadataUpdateDto } from 'types/dtos/task.js'
@@ -53,7 +53,7 @@ export class EventServiceImpl
       }
 
       // Add event ID to task
-      const updatedEventsIds = [...task.eventsIds, newEvent.id]
+      const updatedEventsIds = [...(task.eventsIds ?? []), newEvent.id]
 
       // Fetch all events for metadata calculation
       const allEvents = await this.eventRepository.findByTaskId(dto.taskId, session)
@@ -93,9 +93,66 @@ export class EventServiceImpl
     }
   }
 
+  async updateEvent(dto: IUpdateEventDto, userId: string): Promise<IEvent> {
+    const session = await this.eventRepository.startSession()
+    session.startTransaction()
+
+    try {
+      const task = await this.taskRepository.findById(dto.taskId)
+      if (!task) {
+        throw new ApiError(404, 'Task not found.')
+      }
+
+      if (userId !== task.createdBy) {
+        throw new ApiError(403, 'Only the creator of the task can update it.')
+      }
+
+      const updatedEvent = await this.eventRepository.updateEventWithSession(dto, session)
+
+      if (!updatedEvent) {
+        throw new ApiError(500, 'Failed to update event.')
+      }
+
+      // Fetch all events for metadata calculation
+      const allEvents = await this.eventRepository.findByTaskId(task.id, session)
+
+      // Recalculate task metadata
+      const eventsData = allEvents.map(e => ({
+        start: e.start,
+        end: e.end,
+        status: e.status,
+      }))
+      const { beginningDate, completionDate, duration, progress, status } =
+        computeTaskMetadata(eventsData)
+
+      const taskMetadataDto: ITaskMetadataUpdateDto = {
+        beginningDate,
+        completionDate,
+        duration,
+        progress,
+        status,
+      }
+
+      // Update task with new event and metadata
+      const updatedTask = await this.taskRepository.updateTask(task.id, taskMetadataDto, session)
+
+      if (!updatedTask) {
+        throw new ApiError(500, 'Failed to update task metadata.')
+      }
+
+      await session.commitTransaction()
+      return updatedEvent
+    } catch (err) {
+      await session.abortTransaction()
+      throw err
+    } finally {
+      session.endSession()
+    }
+  }
+
   async getAllByUser(
     userId: string,
-    params: IPaginationParams
+    params: IPaginationOptions
   ): Promise<IPaginationResult<IEvent>> {
     return await this.eventRepository.findAllByUser(userId, params)
   }
@@ -222,7 +279,7 @@ export class EventServiceImpl
     }
 
     const updatedEvent = await this.eventRepository.update(eventId, {
-      collaboratorsIds: [...new Set([...event.collaboratorsIds, collaboratorId])],
+      collaboratorsIds: [...new Set([...(event.collaboratorsIds ?? []), collaboratorId])],
     })
 
     if (!updatedEvent) throw new ApiError(404, 'Failed to update event with collaborators.')
@@ -258,7 +315,7 @@ export class EventServiceImpl
       throw new ApiError(400, 'A collaborator ID must be provided.')
     }
 
-    if (!event.collaboratorsIds.includes(collaboratorId)) {
+    if (!event.collaboratorsIds?.includes(collaboratorId)) {
       throw new ApiError(400, 'The specified collaborator is not assigned to this event.')
     }
 

@@ -12,7 +12,7 @@ import {
   buildPaginationResult,
   IPaginationResult,
   normalizePaginationParams,
-  IPaginationParams,
+  IPaginationOptions,
 } from '../../helpers/pagination.js'
 
 const ALLOWED_SORT_FIELDS = [
@@ -36,9 +36,12 @@ export class TaskRepository
 
   async findAllByUser(
     userId: string,
-    params: IPaginationParams = {}
+    params: IPaginationOptions = {}
   ): Promise<IPaginationResult<ITask>> {
-    const { page, perPage, sortBy, sortOrder } = normalizePaginationParams(params)
+    const { page, perPage, sortBy, sortOrder } = normalizePaginationParams({
+      ...params,
+      sortOrder: params.sortOrder ?? 'asc',
+    })
     const skip = calculateSkip(page, perPage)
     const sortCriteria = buildSortCriteria(sortBy, sortOrder, isAllowedField, 'beginningDate')
 

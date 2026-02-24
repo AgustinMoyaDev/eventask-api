@@ -6,14 +6,12 @@ export interface ITaskCreateDto {
 }
 
 /**
- * DTO for updating task basic info (client-facing).
- * User can only modify title and category.
+ * DTO for client-facing task updates (PATCH /tasks/:id).
+ * Only basic fields editable by the user.
  */
 export interface ITaskUpdateDto {
   title?: string
   categoryId?: string
-  eventsIds?: string[]
-  participantsIds?: string[]
 }
 
 /**
@@ -25,8 +23,8 @@ export interface ITaskMetadataUpdateDto {
   categoryId?: string
   participantsIds?: string[]
   eventsIds?: string[]
-  beginningDate?: string
-  completionDate?: string
+  beginningDate?: Date
+  completionDate?: Date
   status?: TaskStatus
   duration?: number
   progress?: number

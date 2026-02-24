@@ -1,4 +1,4 @@
-import { IPaginationParams, IPaginationResult } from '../../helpers/pagination.js'
+import { IPaginationOptions, IPaginationResult } from '../../helpers/pagination.js'
 import { IBaseRepository } from '../../repositories/IBaseRepository.js'
 
 import { IUserDto } from '../../types/dtos/user.js'
@@ -22,7 +22,7 @@ export interface IUserRepository extends IBaseRepository<
    * @param params - Pagination parameters.
    * @returns A promise that resolves to a paginated result of user DTOs.
    */
-  findContacts(userId: string, params: IPaginationParams): Promise<IPaginationResult<IUserDto>>
+  findContacts(userId: string, params: IPaginationOptions): Promise<IPaginationResult<IUserDto>>
   /**
    * Finds a user by email using explicit $eq operator for security.
    * @param email - Validated and sanitized email string (must be checked by express-validator before calling)

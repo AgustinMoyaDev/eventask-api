@@ -6,11 +6,11 @@ import { MongooseRepository } from '../../repositories/MongooseRepository.js'
 import { IEventRepository } from './IEventRepository.js'
 
 import { IEvent, IEventCalendarResult } from '../../types/IEvent.js'
-import { ICreateEventDto, UpdateEventDto } from '../../types/dtos/event.js'
+import { ICreateEventDto, IUpdateEventDto } from '../../types/dtos/event.js'
 import {
   buildPaginationResult,
   calculateSkip,
-  IPaginationParams,
+  IPaginationOptions,
   IPaginationResult,
   normalizePaginationParams,
 } from '../../helpers/pagination.js'
@@ -58,7 +58,7 @@ export class EventRepository
 
   async findAllByUser(
     userId: string,
-    params: IPaginationParams
+    params: IPaginationOptions
   ): Promise<IPaginationResult<IEvent>> {
     const { page, perPage, sortBy, sortOrder } = normalizePaginationParams(params)
     const skip = calculateSkip(page, perPage)
@@ -139,11 +139,12 @@ export class EventRepository
   }
 
   async updateEventWithSession(
-    id: string,
-    payload: UpdateEventDto,
+    payload: IUpdateEventDto,
     session: ClientSession
   ): Promise<IEvent | null> {
-    const event = await this.model.findByIdAndUpdate(id, payload, { new: true, session }).exec()
+    const event = await this.model
+      .findByIdAndUpdate(payload.id, payload, { new: true, session })
+      .exec()
     return event ? event.toJSON() : null
   }
 

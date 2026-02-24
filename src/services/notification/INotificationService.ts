@@ -1,6 +1,6 @@
 import { IPaginationResult } from '../../helpers/pagination.js'
 import { IBaseService } from '../../services/IBaseService.js'
-import { INotification, INotificationPaginationParams } from '../../types/INotification.js'
+import { INotification, INotificationQueryOptions } from '../../types/INotification.js'
 
 /**
  * Contract for notification service operations.
@@ -20,7 +20,7 @@ export interface INotificationService extends IBaseService<
    */
   getUserNotifications(
     userId: string,
-    params?: INotificationPaginationParams
+    params?: INotificationQueryOptions
   ): Promise<IPaginationResult<INotification>>
 
   /**

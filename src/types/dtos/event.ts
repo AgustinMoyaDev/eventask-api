@@ -4,8 +4,8 @@ import { IUser } from '../../types/IUser.js'
 
 export interface IEventTaskMetadataDto {
   status: EventStatus
-  start: string // ISO date
-  end: string // ISO date
+  start: Date
+  end: Date
 }
 
 export interface IEventDto extends IEventTaskMetadataDto {
@@ -24,7 +24,16 @@ export interface ICreateEventDto extends IEventTaskMetadataDto {
   taskId: string
 }
 
-export type UpdateEventDto = Partial<ICreateEventDto>
+export interface IUpdateEventDto {
+  id: string
+  status: EventStatus
+  taskId: string
+  title: string
+  start: string
+  end: string
+  notes: string
+  createdBy: string
+}
 
 export interface IEventResponseDto extends IEventTaskMetadataDto {
   id: string

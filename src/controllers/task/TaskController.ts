@@ -1,7 +1,7 @@
 import { BaseControllerImpl } from '../../controllers/base/BaseControllerImpl.js'
 import { ITaskService } from '../../services/task/ITaskService.js'
 
-import { IPaginationParams, IPaginationResult } from '../../helpers/pagination.js'
+import { IPaginationOptions, IPaginationResult } from '../../helpers/pagination.js'
 
 import { AuthenticatedRequest } from '../../config/types/request.js'
 
@@ -11,9 +11,9 @@ import { ITaskCreateDto, ITaskUpdateDto } from '../../types/dtos/task.js'
 export class TaskController extends BaseControllerImpl<ITask, ITaskService> {
   async getAllByUser(req: AuthenticatedRequest): Promise<IPaginationResult<ITask>> {
     const { uid, query } = req
-    const { page, perPage, sortBy, sortOrder } = query as IPaginationParams
+    const { page, perPage, sortBy, sortOrder } = query as IPaginationOptions
 
-    const params: IPaginationParams = {
+    const params: IPaginationOptions = {
       page: page ? parseInt(String(page)) : undefined,
       perPage: perPage ? parseInt(String(perPage)) : undefined,
       sortBy: sortBy as string,

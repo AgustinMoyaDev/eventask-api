@@ -1,4 +1,4 @@
-import { IPaginationParams, IPaginationResult } from '../../helpers/pagination.js'
+import { IPaginationOptions, IPaginationResult } from '../../helpers/pagination.js'
 import { AuthenticatedRequest } from '../../config/types/request.js'
 import { BaseControllerImpl } from '../../controllers/base/BaseControllerImpl.js'
 import { IEventService } from '../../services/event/IEventService.js'
@@ -8,14 +8,14 @@ import {
   IEventCalendarQueryParams,
   IEventCalendarResult,
 } from '../../types/IEvent.js'
-import { ICreateEventDto } from 'types/dtos/event.js'
+import { ICreateEventDto, IUpdateEventDto } from '../../types/dtos/event.js'
 
 export class EventController extends BaseControllerImpl<IEvent, IEventService> {
   async getAllByUser(req: AuthenticatedRequest): Promise<IPaginationResult<IEvent>> {
     const { uid, query } = req
-    const { page, perPage, sortBy, sortOrder } = query as IPaginationParams
+    const { page, perPage, sortBy, sortOrder } = query as IPaginationOptions
 
-    const params: IPaginationParams = {
+    const params: IPaginationOptions = {
       page: page ? parseInt(String(page)) : undefined,
       perPage: perPage ? parseInt(String(perPage)) : undefined,
       sortBy: sortBy as string,
@@ -40,6 +40,10 @@ export class EventController extends BaseControllerImpl<IEvent, IEventService> {
   async createEvent(dto: ICreateEventDto, userId: string): Promise<IEvent> {
     const payload = { ...dto, createdBy: userId }
     return this.service.createEvent(payload, userId)
+  }
+
+  async updateEvent(dto: IUpdateEventDto, userId: string): Promise<IEvent> {
+    return this.service.updateEvent(dto, userId)
   }
 
   async assignCollaborator(

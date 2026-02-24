@@ -5,7 +5,7 @@ import { ICategory, ICategoryWithTaskCount } from '../../types/ICategory.js'
 import {
   buildPaginationResult,
   calculateSkip,
-  IPaginationParams,
+  IPaginationOptions,
   IPaginationResult,
   normalizePaginationParams,
 } from '../../helpers/pagination.js'
@@ -28,7 +28,7 @@ export class CategoryRepository
   }
   async findAllByUser(
     userId: string,
-    params: IPaginationParams
+    params: IPaginationOptions
   ): Promise<IPaginationResult<ICategory>> {
     const { page, perPage, sortBy, sortOrder } = normalizePaginationParams(params)
     const skip = calculateSkip(page, perPage)

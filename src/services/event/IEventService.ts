@@ -1,8 +1,8 @@
 import { IBaseService } from '../IBaseService.js'
 
 import { EventStatus, IEvent, IEventCalendarResult } from '../../types/IEvent.js'
-import { ICreateEventDto } from '../../types/dtos/event.js'
-import { IPaginationParams, IPaginationResult } from '../../helpers/pagination.js'
+import { ICreateEventDto, IUpdateEventDto } from '../../types/dtos/event.js'
+import { IPaginationOptions, IPaginationResult } from '../../helpers/pagination.js'
 
 export interface IEventService extends IBaseService<
   IEvent,
@@ -10,7 +10,7 @@ export interface IEventService extends IBaseService<
   Omit<IEvent, 'id'>,
   Partial<Omit<IEvent, 'id'>>
 > {
-  getAllByUser(userId: string, params: IPaginationParams): Promise<IPaginationResult<IEvent>>
+  getAllByUser(userId: string, params: IPaginationOptions): Promise<IPaginationResult<IEvent>>
   /**
    * Get events for calendar view by month
    * @param userId - User ID
@@ -24,6 +24,7 @@ export interface IEventService extends IBaseService<
    * @param userId - ID of the user creating the event
    */
   createEvent(dto: ICreateEventDto, userId: string): Promise<IEvent>
+  updateEvent(dto: IUpdateEventDto, userId: string): Promise<IEvent>
   updateStatus(id: string, dto: { status: EventStatus }): Promise<IEvent>
   assignCollaborator(userId: string, eventId: string, collaboratorId: string): Promise<IEvent>
   removeCollaborator(userId: string, eventId: string, collaboratorId: string): Promise<IEvent>

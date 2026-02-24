@@ -4,7 +4,6 @@ import { IBase } from './IBase.js'
 
 export const EVENT_STATUS = {
   PENDING: 'pending',
-  PROGRESS: 'in-progress',
   COMPLETED: 'completed',
 } as const
 
@@ -14,16 +13,18 @@ export interface IEvent extends IBase {
   title: string
   status: EventStatus
   notes: string
-  start: string
-  end: string
+  start: Date
+  end: Date
   lastNotificationSent?: Date
   taskId: string
   createdBy: string
-  collaboratorsIds: string[]
-  // optional virtual fields after populated()
-  task?: ITask
-  creator?: IUser
-  collaborators?: IUser[]
+  collaboratorsIds?: string[]
+}
+
+export interface IEventPopulated extends IEvent {
+  task: ITask
+  creator: IUser
+  collaborators: IUser[]
 }
 
 /**

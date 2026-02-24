@@ -4,7 +4,7 @@ import { BaseControllerImpl } from '../../controllers/base/BaseControllerImpl.js
 import { ApiError } from '../../config/middlewares/ApiError.js'
 import { AuthenticatedRequest } from '../../config/types/request.js'
 
-import { IPaginationParams, IPaginationResult } from '../../helpers/pagination.js'
+import { IPaginationOptions, IPaginationResult } from '../../helpers/pagination.js'
 
 import { IUser } from '../../types/IUser.js'
 import { IUserDto } from '../../types/dtos/user.js'
@@ -16,9 +16,9 @@ export class UserController extends BaseControllerImpl<IUser, IUserService> {
 
   async getContacts(req: AuthenticatedRequest): Promise<IPaginationResult<IUserDto>> {
     const { uid, query } = req
-    const { page, perPage, sortBy, sortOrder } = query as IPaginationParams
+    const { page, perPage, sortBy, sortOrder } = query as IPaginationOptions
 
-    const params: IPaginationParams = {
+    const params: IPaginationOptions = {
       page: page ? parseInt(String(page)) : undefined,
       perPage: perPage ? parseInt(String(perPage)) : undefined,
       sortBy: sortBy as string,

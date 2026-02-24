@@ -2,7 +2,7 @@ import { IPaginationResult } from '../../helpers/pagination.js'
 import { AuthenticatedRequest } from '../../config/types/request.js'
 import { BaseControllerImpl } from '../../controllers/base/BaseControllerImpl.js'
 import { INotificationService } from '../../services/notification/INotificationService.js'
-import { INotification, INotificationPaginationParams } from '../../types/INotification.js'
+import { INotification, INotificationQueryOptions } from '../../types/INotification.js'
 
 /**
  * Controller for notification management endpoints.
@@ -14,9 +14,9 @@ export class NotificationController extends BaseControllerImpl<
 > {
   async getUserNotifications(req: AuthenticatedRequest): Promise<IPaginationResult<INotification>> {
     const { uid, query } = req
-    const { page, perPage, sortBy, sortOrder, read, type } = query as INotificationPaginationParams
+    const { page, perPage, sortBy, sortOrder, read, type } = query as INotificationQueryOptions
 
-    const params: INotificationPaginationParams = {
+    const params: INotificationQueryOptions = {
       page: page ? parseInt(String(page)) : undefined,
       perPage: perPage ? parseInt(String(perPage)) : undefined,
       sortBy: sortBy as string,

@@ -1,4 +1,4 @@
-import { IPaginationParams } from '../helpers/pagination.js'
+import { IPaginationOptions } from '../helpers/pagination.js'
 import { InvitationStatus } from './IInvitation.js'
 
 export const NOTIFICATION_TYPE = {
@@ -17,9 +17,9 @@ export type NotificationType = (typeof NOTIFICATION_TYPE)[keyof typeof NOTIFICAT
 export interface INotification {
   id?: string
   userId: string // User receiving the notification
-  type: NotificationType // Type of notification
-  title: string // Notification title
-  message: string // Notification content
+  type: NotificationType
+  title: string
+  message: string
   data?: INotificationData // Additional context data
   read: boolean // Whether user has read it
   createdAt: Date
@@ -31,29 +31,25 @@ export interface INotification {
  * Provides context for specific notification types.
  */
 export interface INotificationData {
-  // Invitation-related data
-  invitationId?: string
   invitationStatus?: InvitationStatus
-  actionUrl?: string // URL for notification action
-  // Task-related data
-  taskId?: string
+  invitationId?: string
   taskTitle?: string
-  // Event-related data
+  taskId?: string
   eventId?: string
+  fromUserId?: string
+  fromUserName?: string
+  actionUrl?: string // URL for notification action
   eventTitle?: string
-  eventStart?: string
+  eventStart?: Date
   minutesUntilStart?: number
-  // General Data
   createdBy?: string
   deallocatedBy?: string
-  fromUserId?: string // User who triggered the notification
-  fromUserName?: string // Name of user who triggered it
 }
 
 /**
  * Query options for notification filtering.
  */
-export interface INotificationPaginationParams extends IPaginationParams {
+export interface INotificationQueryOptions extends IPaginationOptions {
   read?: boolean
   type?: string
 }

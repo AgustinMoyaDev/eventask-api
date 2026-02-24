@@ -4,7 +4,7 @@ import { IBaseRepository } from '../../repositories/IBaseRepository.js'
 
 import { ITaskCreateDto, ITaskUpdateDto } from '../../types/dtos/task.js'
 import { ITask } from '../../types/ITask.js'
-import { IPaginationParams, IPaginationResult } from '../../helpers/pagination.js'
+import { IPaginationOptions, IPaginationResult } from '../../helpers/pagination.js'
 
 export interface ITaskRepository extends IBaseRepository<
   ITask,
@@ -18,7 +18,7 @@ export interface ITaskRepository extends IBaseRepository<
    * @param params - Pagination and sorting parameters
    * @returns Paginated result with metadata
    */
-  findAllByUser(userId: string, params: IPaginationParams): Promise<IPaginationResult<ITask>>
+  findAllByUser(userId: string, params: IPaginationOptions): Promise<IPaginationResult<ITask>>
   /**
    * Gets a task by its ID with its references populated.
    * @param id Task ID

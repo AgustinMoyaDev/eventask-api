@@ -46,14 +46,16 @@ router.put(
     controller.assignCollaborator(req.uid!, req.params.id, req.params.collaboratorId)
   )
 )
-router.put(
-  '/:id',
-  eventValidations(),
-  toHandler(req => controller.update(req.params.id, req.body))
-)
+
 router.patch(
   '/:id/status',
   toHandler<AuthenticatedRequest>(req => controller.updateStatus(req.params.id, req.body))
+)
+
+router.put(
+  '/:id',
+  eventValidations(),
+  toHandler<AuthenticatedRequest>(req => controller.updateEvent(req.body, req.uid!))
 )
 router.delete(
   '/:id/collaborators/:collaboratorId',
